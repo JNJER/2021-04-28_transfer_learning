@@ -37,15 +37,29 @@ def train_model(model, df_train, criterion, optimizer, i_trials, num_epochs=10):
                 break
                 
             inputs, labels = data
+            print('inputs : ' , inputs)
+            print('inputs size : ' , inputs.size())
+            print()
+            print('labels : ' , labels)
+            print('labels size : ' , labels.size())
+            
             with torch.no_grad():
                 inputs, labels = inputs.to(device), labels.to(device)   
             
             optimizer.zero_grad()
 
             outputs = model(inputs)
-
+            print('outputs : ' , outputs)
+            print('outputs size : ' , outputs.size())
+            
+            outputs = sig(outputs)
+            print('outputs sig : ' , outputs)
+            print('outputs sig size : ' , outputs.size())
+            
             _, preds = torch.max(outputs.data, 1)
-            loss = criterion(outputs, labels)
+            print('Preds : ' , preds)
+            print('preds size : ' , preds.size())
+            loss = criterion(preds, labels)
 
             loss.backward()
             optimizer.step()
@@ -57,6 +71,8 @@ def train_model(model, df_train, criterion, optimizer, i_trials, num_epochs=10):
             torch.cuda.empty_cache()
             
         print()
+        
+        scheduler.step()
         avg_loss = loss_train / dataset_sizes['train']
         avg_acc = acc_train / dataset_sizes['train']
         
@@ -113,8 +129,6 @@ def train_model(model, df_train, criterion, optimizer, i_trials, num_epochs=10):
     return(model, df_train, i_trials)
 
 # Training and saving the network
-#pgray = np.arange(0, 1.1, 0.1)
-pgray = np.linspace(0, 1, 10, endpoint=True)
 
 print( f'Train scale : {train_scale}, Train gray : {train_gray}, Train basic : {train_base}')    
 for name in train_modes:
@@ -134,7 +148,7 @@ for name in train_modes:
             for image_size in image_sizes:
                 print(f"Traning {name}, image_size = {image_size}, i_trials = {i_trials}")
                 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size)
-                models[name], df_train[name], i_trials = train_model(models[name], df_train[name], criterion, optimizer=opt[name], i_trials=i_trials, num_epochs=45) # need more epochs per scale
+                models[name], df_train[name], i_trials = train_model(models[name], df_train[name], criterion, optimizer=opt[name], i_trials=i_trials, num_epochs=num_epochs) # need more epochs per scale
                 torch.save(models[name].state_dict(), model_paths[name])
                 torch.cuda.empty_cache()
             image_size = args.image_size

@@ -37,7 +37,7 @@ def datasets_transforms(image_size=args.image_size, p=0):
     dataloaders = {
         x: torch.utils.data.DataLoader(
             image_datasets[x], batch_size=8,
-            shuffle=True, num_workers=4
+            shuffle=True, num_workers=0
         )
         for x in folder
     }
@@ -86,8 +86,10 @@ for name in train_modes:
         features.extend([nn.Linear(num_features, lay_)]) # Add our layer with 10 outputs
         models[name].classifier = nn.Sequential(*features) # Replace the model classifier     
         opt[name] = optim.SGD(models[name].parameters(), lr=0.001, momentum=0.9) # to set training variables
+        scheduler[name] = lr_scheduler.StepLR(opt[name], step_size=10, gamma=0.1)
 
-criterion = nn.CrossEntropyLoss()       
+sig = nn.Sigmoid()
+criterion = nn.BCEWithLogitsLoss()       
 print("Loading pretrained model..")
 print("Resume_training : ", resume_training)
 

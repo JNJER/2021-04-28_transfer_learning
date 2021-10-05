@@ -1,9 +1,11 @@
 
 # Importing libraries
 import argparse
+import copy
 import imageio
 import json
 import matplotlib.pyplot as plt
+import math
 import numpy as np
 from numpy import random
 import os
@@ -11,6 +13,7 @@ import requests
 from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
 import seaborn as sns
 import sklearn.metrics
+from sklearn.manifold import TSNE
 from sklearn.metrics import multilabel_confusion_matrix
 from scipy import stats
 from scipy.special import logit, expit
@@ -23,6 +26,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from torch.autograd import Variable
+import torch.backends.cudnn as cudnn
 import torchvision
 from torchvision import datasets, models, transforms
 from torchvision.datasets import ImageFolder
@@ -41,37 +45,37 @@ def arg_parse():
     parser = argparse.ArgumentParser(description='DCNN_training_benchmark/init.py set root')
     parser.add_argument("--root", dest = 'root', help = 
                         "Directory containing images to perform the training",
-                        default = '/Users/jjn/Desktop/data', type = str)
+                        default = '/tmp/data', type = str)
     parser.add_argument("--folder", dest = 'folder', help = 
                         "Set the training and the validation folders from the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = 
-                    "Set the name of your machine",
-                    default = os.uname()[1], type = str)
+                        "Set the name of your machine",
+                        default = os.uname()[1], type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = 
-                    "Set the datetag of the result's file",
-                    default = strftime("%Y-%m-%d", gmtime()), type = str)
+                        "Set the datetag of the result's file",
+                        default = strftime("%Y-%m-%d", gmtime()), type = str)
     parser.add_argument("--image_size", dest = 'image_size', help = 
-                    "Set the image_size of the input",
-                    default = 256)
+                        "Set the image_size of the input",
+                        default = 256)
     parser.add_argument("--image_sizes", dest = 'image_sizes', help = 
-                    "Set the image_sizes of the input for experiment 2 (downscaling)",
-                    default = 2**np.arange(6, 10), type = list)
+                        "Set the image_sizes of the input for experiment 2 (downscaling)",
+                        default = 2**np.arange(6, 10), type = list)
     parser.add_argument("--N_images_train", dest = 'N_images_train', help = 
-                    "Set the number of images per classe in the train folder",
-                    default = 500)
+                        "Set the number of images per classe in the train folder",
+                        default = 500)
     parser.add_argument("--N_images_val", dest = 'N_images_val', help = 
-                    "Set the number of images per classe in the val folder",
-                    default = 100)
+                        "Set the number of images per classe in the val folder",
+                        default = 100)
     parser.add_argument("--N_images_test", dest = 'N_images_test', help = 
-                    "Set the number of images per classe in the test folder",
-                    default = 100)
+                        "Set the number of images per classe in the test folder",
+                        default = 100)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = 
-                    "Set the number of epoch to perform during the traitransportationning phase",
-                    default = 150)
+                        "Set the number of epoch to perform during the traitransportationning phase",
+                        default = 50)
     parser.add_argument("--i_labels", dest = 'i_labels', help = 
-                    "Set the labels of the classes (list of int)",
-                    default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
+                        "Set the labels of the classes (list of int)",
+                        default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
     parser.add_argument("--class_loader", dest = 'class_loader', help = 
                         "Set the Directory containing imagenet downloaders class",
                         default = 'imagenet_label_to_wordnet_synset.json', type = str)
@@ -89,13 +93,13 @@ def arg_parse():
                         default = False, type = bool)
     parser.add_argument("--train_scale", dest = 'train_scale', help = 
                         "--True to train vgg16_scale",
-                        default = False, type = bool)
+                        default = True, type = bool)
     parser.add_argument("--train_gray", dest = 'train_gray', help = 
                         "--True to train vgg16_gray",
-                        default = False, type = bool)
+                        default = True, type = bool)
     parser.add_argument("--train_base", dest = 'train_base', help = 
                         "--True to train vgg16_lin & vgg16_gen",
-                        default = False, type = bool)
+                        default = True, type = bool)
     return parser.parse_args()
 
 args = arg_parse()
@@ -196,5 +200,5 @@ pprint('List of Pre-selected classes : ')
 for i_label, id_ in zip(i_labels, id_dl) : 
     reverse_model_labels.append(labels[i_label])
     print('-> label', i_label, '=', labels[i_label], '\nid wordnet : ', id_)
-
+reverse_model_labels_vgg = reverse_model_labels.copy()
 reverse_model_labels.sort()

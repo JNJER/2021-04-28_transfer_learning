@@ -16,15 +16,15 @@ except:
     # Displays the input image of the model
     for i_image, (data, label) in enumerate(image_datasets['test']):
             for name in models.keys():
-                model = models[name]
+                model = models[name].to(device)
                 model.eval()
                 i_label_top = reverse_labels[image_datasets['test'].classes[label]]
                 tic = time.time()
                 out = model(data.unsqueeze(0).to(device)).squeeze(0)
-                if name == 'vgg' :
+                if name == 'vgg_sub' :
                     percentage = torch.nn.functional.softmax(out[i_labels], dim=0) * 100
-                    _, indices = torch.sort(out, descending=True)
-                    top_1 = labels[indices[0]]
+                    _, indices = torch.sort(out[i_labels], descending=True)
+                    top_1 = reverse_model_labels_vgg[indices[0]]
                     perf_ = percentage[reverse_i_labels[i_label_top]].item()
                 else :
                     percentage = torch.nn.functional.softmax(out, dim=0) * 100

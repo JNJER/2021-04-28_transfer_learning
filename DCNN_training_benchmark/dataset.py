@@ -1,11 +1,15 @@
 
 from DCNN_training_benchmark.init import *  
 
+#def del_mac_ds_store(list_dir):
 #if '.DS_Store' in list_dir :
  #   cmd ='rm -Rf .DS_Store'
-  #  print('Command to run : ', cmd)
+  #  print('Oups need to delete the `.DS_Store` file, running : ', cmd)
    # os.system(cmd) # running it
     #list_dir = os.listdir(path)
+     #return list_dir
+#else:
+    #return list_dir
 
 img = ('jpg', 'jpeg', 'png', 'ppm', 'bmp', 'pgm', 'tif', 'tiff', 'webp')   
 verbose = False 
@@ -112,7 +116,7 @@ if not os.path.isdir(root):
     os.makedirs(root)
     print(f'folder {root} did not exist! creating folder..')
 
-iter_ = 600    
+iter_ = 0    
 for x in folder :
     filename = f'results/{datetag}_dataset_{x}_{HOST}.json'
     # check if the folder exist
@@ -189,7 +193,7 @@ for x in folder :
     iter_ += N_images_per_class[x]
     
 if save : 
-    json_fname = 'ImageNet-Datasets-Downloader/Imagenet_urls_ILSVRC_2016.json'
+    json_fname = 'Imagenet_urls_ILSVRC_2016.json'
     print(f'Creating file {json_fname}')
     with open(json_fname, 'wt') as f:
         json.dump(Imagenet_urls_ILSVRC_2016, f, indent=4)
