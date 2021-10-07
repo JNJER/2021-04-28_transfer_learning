@@ -24,7 +24,8 @@ import pandas as pd
 
 # parse the root to the init module
 def arg_parse():
-    DEBUG = 10
+    DEBUG = 25
+    DEBUG = 1
     parser = argparse.ArgumentParser(description='DCNN_training_benchmark/init.py set root')
     parser.add_argument("--root", dest = 'root', help = 
                         "Directory containing images to perform the training",
@@ -52,10 +53,16 @@ def arg_parse():
                     default = 100//DEBUG)
     parser.add_argument("--N_images_test", dest = 'N_images_test', help = 
                     "Set the number of images per classe in the test folder",
-                    default = 100//DEBUG)
+                    default = 100)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = 
                     "Set the number of epoch to perform during the traitransportationning phase",
                     default = 50//DEBUG)
+    parser.add_argument("--lr", dest = 'lr', help = 
+                    "Set the learning rate",
+                    default = 0.001)
+    parser.add_argument("--momentum", dest = 'momentum', help = 
+                    "Set the momentum",
+                    default = 0.9)
     parser.add_argument("--i_labels", dest = 'i_labels', help = 
                     "Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
@@ -71,18 +78,18 @@ def arg_parse():
     parser.add_argument("--model_names", dest = 'model_names', help = 
                         "Modes for the new trained networks",
                         default = ['vgg16_gray', 'vgg16_lin', 'vgg16_gen', 'vgg16_scale',], type = list)
-    parser.add_argument("--resume_training", dest = 'resume_training', help = 
-                        "--True to retrieve the latest model train",
-                        default = False, type = bool)
-    parser.add_argument("--train_scale", dest = 'train_scale', help = 
-                        "--True to train vgg16_scale",
-                        default = True, type = bool)
-    parser.add_argument("--train_gray", dest = 'train_gray', help = 
-                        "--True to train vgg16_gray",
-                        default = True, type = bool)
-    parser.add_argument("--train_base", dest = 'train_base', help = 
-                        "--True to train vgg16_lin & vgg16_gen",
-                        default = True, type = bool)
+    #parser.add_argument("--resume_training", dest = 'resume_training', help = 
+    #                    "--True to retrieve the latest model train",
+    #                    default = False, type = bool)
+    #parser.add_argument("--train_scale", dest = 'train_scale', help = 
+    #                    "--True to train vgg16_scale",
+    #                    default = True, type = bool)
+    #parser.add_argument("--train_gray", dest = 'train_gray', help = 
+    #                    "--True to train vgg16_gray",
+    #                    default = True, type = bool)
+    #parser.add_argument("--train_base", dest = 'train_base', help = 
+    #                    "--True to train vgg16_lin & vgg16_gen",
+    #                    default = True, type = bool)
     return parser.parse_args()
 
 args = arg_parse()
@@ -115,15 +122,15 @@ HOST = args.HOST
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim import lr_scheduler
 from torch.autograd import Variable
 import torchvision
 from torchvision import datasets, models, transforms
 from torchvision.datasets import ImageFolder
 
 # Select a device (CPU or CUDA)
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print('On date', datetag, ', Running benchmark on host', HOST, ' with device', str(device) )
+#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print('On date', datetag, ', Running benchmark on host', HOST, ' with device', device.type)
 
 # Datasets Configuration
 image_size = args.image_size # default image resolution
@@ -138,14 +145,14 @@ N_labels = len(i_labels)
 id_dl = []
 
 model_names = args.model_names
-resume_training = args.resume_training #--True to retrieve the latest model train
-train_scale = args.train_scale
-train_gray = args.train_gray
-train_base = args.train_base
+#resume_training = args.resume_training #--True to retrieve the latest model train
+#train_scale = args.train_scale
+#train_gray = args.train_gray
+#train_base = args.train_base
 num_epochs = args.num_epochs
 
 model_path = args.model_path
-model_paths = {}
+model_filenames = {}
 root = args.root
 folders = args.folders
 paths = {}
@@ -183,11 +190,9 @@ for i_label, label in enumerate(i_labels):
     
 # a reverse look-up-table giving the label of a given index in the last layer of the new model (within the sub-set of classes)
 reverse_model_labels = []
-
 pprint('List of Pre-selected classes : ')
 # choosing the selected classes for recognition
 for i_label, id_ in zip(i_labels, id_dl) : 
     reverse_model_labels.append(labels[i_label])
     print('-> label', i_label, '=', labels[i_label], '\nid wordnet : ', id_)
-
 reverse_model_labels.sort()

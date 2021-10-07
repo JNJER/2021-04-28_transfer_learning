@@ -15,8 +15,8 @@ except:
     
     # Displays the input image of the model
     for i_image, (data, label) in enumerate(image_datasets['test']):
-            for model_name in models.keys():
-                model = models[model_name]
+            for model_name in models_vgg.keys():
+                model = models_vgg[model_name]
                 model.eval()
                 i_label_top = reverse_labels[image_datasets['test'].classes[label]]
                 tic = time.time()

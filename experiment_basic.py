@@ -10,8 +10,8 @@ except:
     df = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device', 'top_1']) 
     i_trial = 0
     for i_image, (data, label) in enumerate(image_datasets['test']):
-        for model_name in models.keys():
-            model = models[model_name].to(device)
+        for model_name in models_vgg.keys():
+            model = models_vgg[model_name].to(device)
             with torch.no_grad():
                 i_label_top = reverse_labels[image_datasets['test'].classes[label]]
                 tic = time.time()
