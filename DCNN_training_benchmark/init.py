@@ -5,27 +5,13 @@ import imageio
 import json
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import random
+#from numpy import random
 import os
 import requests
-from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
-import seaborn as sns
-import sklearn.metrics
-from sklearn.metrics import multilabel_confusion_matrix
-from scipy import stats
-from scipy.special import logit, expit
 import time
-from time import strftime, gmtime
 
-#DCCN training
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
-from torch.autograd import Variable
-import torchvision
-from torchvision import datasets, models, transforms
-from torchvision.datasets import ImageFolder
+from time import strftime, gmtime
+datetag = strftime("%Y-%m-%d", gmtime())
 
 #to plot & display 
 def pprint(message): #display function
@@ -37,20 +23,21 @@ def pprint(message): #display function
 import pandas as pd
 
 # parse the root to the init module
-def arg_parse(): 
+def arg_parse():
+    DEBUG = 10
     parser = argparse.ArgumentParser(description='DCNN_training_benchmark/init.py set root')
     parser.add_argument("--root", dest = 'root', help = 
                         "Directory containing images to perform the training",
-                        default = '/Users/jjn/Desktop/data', type = str)
-    parser.add_argument("--folder", dest = 'folder', help = 
-                        "Set the training and the validation folders from the root",
+                        default = 'data', type = str)
+    parser.add_argument("--folders", dest = 'folders', help = 
+                        "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = 
                     "Set the name of your machine",
                     default = os.uname()[1], type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = 
                     "Set the datetag of the result's file",
-                    default = strftime("%Y-%m-%d", gmtime()), type = str)
+                    default = datetag, type = str)
     parser.add_argument("--image_size", dest = 'image_size', help = 
                     "Set the image_size of the input",
                     default = 256)
@@ -59,16 +46,16 @@ def arg_parse():
                     default = 2**np.arange(6, 10), type = list)
     parser.add_argument("--N_images_train", dest = 'N_images_train', help = 
                     "Set the number of images per classe in the train folder",
-                    default = 500)
+                    default = 500//DEBUG)
     parser.add_argument("--N_images_val", dest = 'N_images_val', help = 
                     "Set the number of images per classe in the val folder",
-                    default = 100)
+                    default = 100//DEBUG)
     parser.add_argument("--N_images_test", dest = 'N_images_test', help = 
                     "Set the number of images per classe in the test folder",
-                    default = 100)
+                    default = 100//DEBUG)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = 
                     "Set the number of epoch to perform during the traitransportationning phase",
-                    default = 150)
+                    default = 50//DEBUG)
     parser.add_argument("--i_labels", dest = 'i_labels', help = 
                     "Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
@@ -81,21 +68,21 @@ def arg_parse():
     parser.add_argument("--model_path", dest = 'model_path', help = 
                         "Set the path to the pre-trained model",
                         default = 'models/re-trained_', type = str)
-    parser.add_argument("--train_modes", dest = 'train_modes', help = 
+    parser.add_argument("--model_names", dest = 'model_names', help = 
                         "Modes for the new trained networks",
-                        default = ['vgg16_gray', 'vgg16_lin', 'vgg16_gen','vgg16_scale',], type = list)
+                        default = ['vgg16_gray', 'vgg16_lin', 'vgg16_gen', 'vgg16_scale',], type = list)
     parser.add_argument("--resume_training", dest = 'resume_training', help = 
                         "--True to retrieve the latest model train",
                         default = False, type = bool)
     parser.add_argument("--train_scale", dest = 'train_scale', help = 
                         "--True to train vgg16_scale",
-                        default = False, type = bool)
+                        default = True, type = bool)
     parser.add_argument("--train_gray", dest = 'train_gray', help = 
                         "--True to train vgg16_gray",
-                        default = False, type = bool)
+                        default = True, type = bool)
     parser.add_argument("--train_base", dest = 'train_base', help = 
                         "--True to train vgg16_lin & vgg16_gen",
-                        default = False, type = bool)
+                        default = True, type = bool)
     return parser.parse_args()
 
 args = arg_parse()
@@ -116,18 +103,27 @@ if load_parse:
 else:
     print('Load config off')
     
-# figure's variables
-colors = ['b', 'r', 'k','g','m']
+# matplotlib parameters
+colors = ['b', 'r', 'k', 'g', 'm']
 fig_width = 20
 phi = (np.sqrt(5)+1)/2 # golden ratio
-
 
 # host variable 
 HOST = args.HOST
 
+#DCCN training
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
+from torch.autograd import Variable
+import torchvision
+from torchvision import datasets, models, transforms
+from torchvision.datasets import ImageFolder
+
 # Select a device (CPU or CUDA)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(datetag + ' Running benchmark on host ' + HOST +' : '+ str(device) )
+print('On date', datetag, ', Running benchmark on host', HOST, ' with device', str(device) )
 
 # Datasets Configuration
 image_size = args.image_size # default image resolution
@@ -141,7 +137,7 @@ i_labels = args.i_labels # Pre-selected classes
 N_labels = len(i_labels)
 id_dl = []
 
-train_modes = args.train_modes
+model_names = args.model_names
 resume_training = args.resume_training #--True to retrieve the latest model train
 train_scale = args.train_scale
 train_gray = args.train_gray
@@ -151,28 +147,25 @@ num_epochs = args.num_epochs
 model_path = args.model_path
 model_paths = {}
 root = args.root
-folder = args.folder
+folders = args.folders
 paths = {}
 reverse_id_labels = {}
 N_images_per_class = {}
 labels = []
-Imagenet_urls_ILSVRC_2016 = []
 
-for x in folder :
-    paths[x] = os.path.join(root, x) # data path
-    if x == 'train':
-        N_images_per_class[x] = args.N_images_train # choose the number of training pictures
-    elif x == 'val' : 
-        N_images_per_class[x] = args.N_images_val # choose the number of validation pictures
+for folder in folders :
+    paths[folder] = os.path.join(root, folder) # data path
+    if folder == 'train':
+        N_images_per_class[folder] = args.N_images_train # choose the number of training pictures
+    elif folder == 'val' : 
+        N_images_per_class[folder] = args.N_images_val # choose the number of validation pictures
     else:
-        N_images_per_class[x] = args.N_images_test # choose the number of testing pictures 
+        N_images_per_class[folder] = args.N_images_test # choose the number of testing pictures 
 
 with open(args.class_loader, 'r') as fp: # get all the classes on the data_downloader
     imagenet = json.load(fp)
 
-with open(args.url_loader) as json_file:
-    Imagenet_urls_ILSVRC_2016 = json.load(json_file)
-    
+# gathering labels
 for a, img_id in enumerate(imagenet):
     reverse_id_labels[str('n' + (imagenet[img_id]['id'].replace('-n','')))] = imagenet[img_id]['label'].split(',')[0]
     labels.append(imagenet[img_id]['label'].split(',')[0])

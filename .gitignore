@@ -1,2 +1,6 @@
 
-.ipynb_checkpoints/benchmark_transfer_learning_VGG-checkpoint.ipynb
+.ipynb_checkpoints/
+Imagenet_urls_ILSVRC_2016.json
+data/
+models/
+results/

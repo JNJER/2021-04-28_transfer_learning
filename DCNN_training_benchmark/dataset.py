@@ -1,16 +1,21 @@
 
 from DCNN_training_benchmark.init import *  
 
-#if '.DS_Store' in list_dir :
- #   cmd ='rm -Rf .DS_Store'
-  #  print('Command to run : ', cmd)
-   # os.system(cmd) # running it
-    #list_dir = os.listdir(path)
+from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
 
-img = ('jpg', 'jpeg', 'png', 'ppm', 'bmp', 'pgm', 'tif', 'tiff', 'webp')   
+#IMG_EXT = ('jpg', 'jpeg', 'png', 'ppm', 'bmp', 'pgm', 'tif', 'tiff', 'webp')   
 verbose = False 
-save = False
+save = True
 
+#Imagenet_urls_ILSVRC_2016 = []
+with open(args.url_loader) as json_file:
+    Imagenet_urls_ILSVRC_2016 = json.load(json_file)
+
+def clean_list(list_dir, patterns=['.DS_Store']):
+    for pattern in patterns:
+        if pattern in list_dir: list_dir.remove('.DS_Store')
+    return list_dir
+    
 def get_image(img_url, class_folder):
     worked = 0
     to_save = True 
@@ -79,6 +84,7 @@ def get_image(img_url, class_folder):
         worked = 1
         return worked
 
+    # LuP some files miss the extension?
     if not 'jpg' in img_name :
         img_name += 'jpg'
     
@@ -96,54 +102,49 @@ def get_image(img_url, class_folder):
         return fail_get_image()
 
 def fail_get_image():
+    # LuP mais cette variable i n'est pas définie avant!
     worked = 0
     if verbose :
-        print(Imagenet_urls_ILSVRC_2016[str(class_wnid)].pop(i), 'do not works, deleting the url of the database')
+        print(Imagenet_urls_ILSVRC_2016[str(class_wnid)].pop(i), ' does not work, deleting the url of the database')
         return worked 
     else :
         del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
         return worked 
 
-if len(root) == 0:
-    print("The root is required to run downloader!")
-    exit()
-
 if not os.path.isdir(root):
-    os.makedirs(root)
     print(f'folder {root} did not exist! creating folder..')
+    os.makedirs(root)
 
-iter_ = 600    
-for x in folder :
-    filename = f'results/{datetag}_dataset_{x}_{HOST}.json'
-    # check if the folder exist
-    if os.path.isdir(paths[x]):
-        list_dir = os.listdir(paths[x])
-        print("The folder " , x, " already exists, it includes: ", list_dir)
-
-
-    # no folder, creating one 
+iter_ = 0    
+for folder in folders :
+    filename = f'results/{datetag}_dataset_{folder}_{HOST}.json'
+    # check if the folder exists
+    if os.path.isdir(paths[folder]):
+        list_dir = list_dir = clean_list(os.listdir(paths[folder]))
+        print("The folder", folder, " already exists, it includes: ", list_dir)
     else :
-        print(f"No existing path match for this folder, creating a folder at {paths[x]}")
-        os.makedirs(paths[x])
+        # no folder, creating one 
+        print(f"No existing path match for this folder, creating a folder at {paths[folder]}")
+        os.makedirs(paths[folder])
 
-    list_dir = os.listdir(paths[x])
-
+    list_dir = os.listdir(paths[folder])
+    list_dir = clean_list(list_dir)
     # if the folder is empty, download the images using the ImageNet-Datasets-Downloader
     if len(list_dir) < N_labels: 
         df_dataset = pd.DataFrame([], columns=['is_flickr', 'dt', 'lab_work', 'class_wnid', 'class_name'])
         tentativ_ = 0
-        print(f'The {x} folder does not have anough classes, downloading some more \n') 
+        print(f'The {folder} folder does not have anough classes, downloading some more \n') 
         for class_wnid in id_dl:
             class_name = reverse_id_labels[class_wnid]
             print(f'Scraping images for class \"{class_name}\"')
-            class_folder = os.path.join(paths[x], class_name)
+            class_folder = os.path.join(paths[folder], class_name)
             if not os.path.exists(class_folder):
                 os.mkdir(class_folder)                      
             list_dir = os.listdir(class_folder)
             #for i, j in enumerate(Imagenet_urls_ILSVRC_2016[str(class_wnid)]):
             for i in range(iter_, len(Imagenet_urls_ILSVRC_2016[str(class_wnid)]), 1):
                 is_flickr = 0
-                if len(list_dir) < N_images_per_class[x] :
+                if len(list_dir) < N_images_per_class[folder] :
                     tentativ_ +=1
                     try :
                         resp = Imagenet_urls_ILSVRC_2016[str(class_wnid)][i]
@@ -158,38 +159,40 @@ for x in folder :
                         print('is_flickr :', is_flickr,'dt :', dt,'worked :', worked, 'class_wnid : ', class_wnid, 'class_name :', class_name)
                     df_dataset.loc[tentativ_] = {'is_flickr':is_flickr,'dt':dt,'lab_work':worked, 'class_wnid':class_wnid, 'class_name':class_name}
                     list_dir = os.listdir(class_folder)
-                    print(f'\r{len(list_dir)} / {N_images_per_class[x]}', end='', flush=True)
+                    print(f'\r{len(list_dir)} / {N_images_per_class[folder]}', end='', flush=True)
                 else:
-                    print(f'\r{len(list_dir)} / {N_images_per_class[x]}', end='', flush=True)
+                    print(f'\r{len(list_dir)} / {N_images_per_class[folder]}', end='', flush=True)
                     break
             print('\n')
-            if len(list_dir) < N_images_per_class[x] :
+            if len(list_dir) < N_images_per_class[folder] :
                 print('Not anough working url to complete the dataset') 
-        list_dir = os.listdir(paths[x])
+        list_dir = os.listdir(paths[folder])
+        if save :
+            df_dataset.to_json(filename)
 
 
-    elif len(os.listdir(paths[x])) == N_labels :
+    elif len(os.listdir(paths[folder])) == N_labels :
         pprint(f'The folder already contains : {len(list_dir)} classes')
 
-    else : # if there are to many folders delete some
+    elif False : # if there are to many folders delete some # LuP : vraiment nécessaire?
         print('The folder have to many classes, deleting some')
-        for elem in os.listdir(paths[x]):
-            contenu = os.listdir(f'{paths[x]}/{elem}')
-            if len(os.listdir(paths[x])) > N_labels :
-                for y in contenu:
-                    os.remove(f'{paths[x]}/{elem}/{y}') # delete exces folders
+        for elem in clean_list(os.listdir(paths[folder])):
+            list_files = clean_list(os.listdir(f'{paths[folder]}/{elem}'))
+            if len(os.listdir(paths[folder])) > N_labels :
+                for fname in list_files:
+                    os.remove(f'{paths[folder]}/{elem}/{fname}') # delete exces folders
                 try:
-                    os.rmdir(f'{paths[x]}/{elem}')
+                    os.rmdir(f'{paths[folder]}/{elem}')
                 except:
-                    os.remove(f'{paths[x]}/{elem}')
-        list_dir = os.listdir(paths[x])
-        pprint("Now the folder " + x + " contains :" + os.listdir(paths[x]))
-    if save :
-        df_dataset.to_json(filename)
-    iter_ += N_images_per_class[x]
+                    os.remove(f'{paths[folder]}/{elem}')
+        list_dir = os.listdir(paths[folder])
+        pprint("Now the folder " + folder + " contains :" + str(list_dir))
+        
+    iter_ += N_images_per_class[folder]
     
 if save : 
-    json_fname = 'ImageNet-Datasets-Downloader/Imagenet_urls_ILSVRC_2016.json'
+    # replace the file with that URLs that worked
+    json_fname = 'Imagenet_urls_ILSVRC_2016.json'
     print(f'Creating file {json_fname}')
     with open(json_fname, 'wt') as f:
         json.dump(Imagenet_urls_ILSVRC_2016, f, indent=4)
