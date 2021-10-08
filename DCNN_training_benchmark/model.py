@@ -34,7 +34,7 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
             paths[folder], 
             transform=data_transforms[folder]
         )
-        for folder in folders
+        for folder in args.folders
     }
 
     dataloaders = {
@@ -42,20 +42,16 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
             image_datasets[folder], batch_size=batch_size,
             shuffle=True, num_workers=num_workers
         )
-        for folder in folders
+        for folder in args.folders
     }
 
-    dataset_sizes = {folder: len(image_datasets[folder]) for folder in folders}
+    dataset_sizes = {folder: len(image_datasets[folder]) for folder in args.folders}
 
     return(dataset_sizes, dataloaders, image_datasets, data_transforms)
 
 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size)
 
-for folder in folders :
-    print(f"Loaded {dataset_sizes[folder]} images under {folder}")
-    
-print("Classes: ")
+for folder in args.folders : print(f"Loaded {dataset_sizes[folder]} images under {folder}")
 class_names = image_datasets['train'].classes
-print(image_datasets['train'].classes)
-lay_ = len(os.listdir(paths['train']))
-print(lay_)
+print("Classes: ", image_datasets['train'].classes)
+n_output = len(os.listdir(paths['train']))

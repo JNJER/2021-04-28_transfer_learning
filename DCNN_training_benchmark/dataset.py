@@ -16,7 +16,7 @@ def clean_list(list_dir, patterns=['.DS_Store']):
         if pattern in list_dir: list_dir.remove('.DS_Store')
     return list_dir
     
-def get_image(img_url, class_folder):
+def get_image(img_url, class_folder, timeout=3.):
     worked = 0
     to_save = True 
     if verbose:
@@ -26,8 +26,7 @@ def get_image(img_url, class_folder):
         to_save = False
 
     try:
-        img_resp = requests.get(img_url, timeout = 1)
-        
+        img_resp = requests.get(img_url, timeout=timeout)
     except ConnectionError:
         if verbose :
             print(f"Connection Error for url {img_url}")
@@ -111,12 +110,12 @@ def fail_get_image():
         del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
         return worked 
 
-if not os.path.isdir(root):
-    print(f'folder {root} did not exist! creating folder..')
-    os.makedirs(root)
+if not os.path.isdir(args.root):
+    print(f'folder {args.root} did not exist! creating folder..')
+    os.makedirs(args.root)
 
 iter_ = 0    
-for folder in folders :
+for folder in args.folders :
     filename = f'results/{datetag}_dataset_{folder}_{HOST}.json'
     # check if the folder exists
     if os.path.isdir(paths[folder]):
