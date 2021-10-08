@@ -4,6 +4,8 @@ import argparse
 import imageio
 import json
 import matplotlib.pyplot as plt
+plt.rc('xtick', labelsize=18)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=18)    # fontsize of the tick labels
 import numpy as np
 #from numpy import random
 import os
@@ -12,7 +14,7 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-
+datetag = '2021-10-07'
 #to plot & display 
 def pprint(message): #display function
     print('-'*len(message))
@@ -57,6 +59,7 @@ def arg_parse():
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = 
                     "Set the number of epoch to perform during the traitransportationning phase",
                     default = 50//DEBUG)
+    parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
     parser.add_argument("--lr", dest = 'lr', help = 
                     "Set the learning rate",
                     default = 0.001)
