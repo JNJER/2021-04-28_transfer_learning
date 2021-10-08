@@ -27,14 +27,14 @@ import pandas as pd
 
 def arg_parse():
     DEBUG = 25
-    # DEBUG = 1
+    DEBUG = 1
     parser = argparse.ArgumentParser(description='DCNN_training_benchmark/init.py set root')
     parser.add_argument("--root", dest = 'root', help = "Directory containing images to perform the training",
                         default = 'data', type = str)
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",
-                        default = [100, 100//DEBUG, 500//DEBUG], type = list)
+                        default = [1000//DEBUG, 1000//DEBUG, 1000//DEBUG], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = "Set the name of your machine",
                     default = os.uname()[1], type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = "Set the datetag of the result's file",
