@@ -14,7 +14,10 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-#datetag = '2021-10-07'
+#datetag = '2021-10-08'
+
+HOST = os.uname()[1]
+#HOST = 'inv-ope-de06'
 
 #to plot & display 
 def pprint(message): #display function
@@ -34,9 +37,9 @@ def arg_parse():
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",
-                        default = [1000//DEBUG, 1000//DEBUG, 1000//DEBUG], type = list)
+                        default = [400//DEBUG, 200//DEBUG, 800//DEBUG], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = "Set the name of your machine",
-                    default = os.uname()[1], type = str)
+                    default=HOST, type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = "Set the datetag of the result's file",
                     default = datetag, type = str)
     parser.add_argument("--image_size", dest = 'image_size', help = "Set the default image_size of the input",
@@ -62,7 +65,7 @@ def arg_parse():
 
 args = arg_parse()
 datetag = args.datetag
-json_fname = os.path.join(datetag + '_config_args.json')
+json_fname = os.path.join('results', datetag + '_config_args.json')
 load_parse = False # False to custom the config
 
 if load_parse:

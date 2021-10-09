@@ -1,6 +1,6 @@
 from DCNN_training_benchmark.model import *
 
-def train_model(model, dataloaders, num_epochs, lr=args.lr, momentum=args.momentum, log_interval=100):
+def train_model(model, num_epochs, lr=args.lr, momentum=args.momentum, log_interval=100):
     
     model.to(device)
     if momentum == 0.:

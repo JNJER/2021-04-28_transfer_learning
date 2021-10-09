@@ -28,7 +28,7 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
             transforms.ToTensor(),      # Convert the image to pyTorch Tensor data type.
             transforms_norm ]),
     }
-
+    #print(paths)
     image_datasets = {
         folder: datasets.ImageFolder(
             paths[folder], 
@@ -47,7 +47,7 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
 
     dataset_sizes = {folder: len(image_datasets[folder]) for folder in args.folders}
 
-    return(dataset_sizes, dataloaders, image_datasets, data_transforms)
+    return dataset_sizes, dataloaders, image_datasets, data_transforms
 
 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size)
 
