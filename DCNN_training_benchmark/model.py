@@ -1,5 +1,16 @@
 
 from DCNN_training_benchmark.init import *
+
+import torchvision
+from torchvision import datasets, models, transforms
+from torchvision.datasets import ImageFolder
+
+# normalization used to train VGG
+# see https://pytorch.org/hub/pytorch_vision_vgg/
+mean = np.array([0.485, 0.456, 0.406])
+std = np.array([0.229, 0.224, 0.225])
+transforms_norm = transforms.Normalize(mean=mean, std=std) # to normalize colors on the imagenet dataset
+
 import seaborn as sns
 import sklearn.metrics
 from scipy import stats
@@ -49,7 +60,7 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
 
     return dataset_sizes, dataloaders, image_datasets, data_transforms
 
-(dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size)
+(dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size)
 
 for folder in args.folders : print(f"Loaded {dataset_sizes[folder]} images under {folder}")
 class_names = image_datasets['train'].classes

@@ -1,7 +1,7 @@
 
 #import model's script and set the output file
 from DCNN_training_benchmark.model import *
-filename = f'results/{datetag}_results_3_{HOST}.json'
+filename = f'results/{datetag}_results_3_{args.HOST}.json'
 
 def main():
     # Output's set up
@@ -12,7 +12,7 @@ def main():
         i_trial = 0
 
         # image preprocessing setting a grayscale output
-        (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size, p=1, batch_size=1)
+        (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, p=1, batch_size=1)
 
         # Displays the input image of the model 
         for i_image, (data, label) in enumerate(dataloaders['test']):

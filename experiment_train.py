@@ -1,12 +1,13 @@
 from DCNN_training_benchmark.model import *
+import torch.nn as nn
 
 def train_model(model, num_epochs, lr=args.lr, momentum=args.momentum, log_interval=100):
     
     model.to(device)
     if momentum == 0.:
-        optimizer = optim.Adam(model.parameters(), lr=lr)#, betas=(beta1, beta2), amsgrad=amsgrad)
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)#, betas=(beta1, beta2), amsgrad=amsgrad)
     else:
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum) # to set training variables
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum) # to set training variables
 
     df_train = pd.DataFrame([], columns=['epoch', 'avg_loss', 'avg_acc', 'avg_loss_val', 'avg_acc_val', 'device_type']) 
 
@@ -65,9 +66,10 @@ opt = {}
 models_vgg['vgg'] = torchvision.models.vgg16(pretrained=True)
 
 # Downloading the model
+model_filenames = {}
 for model_name in args.model_names:
     model_filenames[model_name] = args.model_path + model_name + '.pt'
-    filename = f'results/{datetag}_{HOST}_train_{model_name}.json'
+    filename = f'results/{datetag}_{args.HOST}_train_{model_name}.json'
 
     models_vgg[model_name] = torchvision.models.vgg16(pretrained=True)
     # Freeze training for all layers
@@ -103,7 +105,7 @@ for model_name in args.model_names:
         p = 1 if model_name == 'vgg16_gray' else 0
         if model_name =='vgg16_scale':
             df_train = None
-            for image_size_ in image_sizes: # starting with low resolution images 
+            for image_size_ in args.image_sizes: # starting with low resolution images 
                 print(f"Traning {model_name}, image_size = {image_size_}, p (Grayscale) = {p}")
                 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size_, p=p)
                 models_vgg[model_name], df_train_ = train_model(models_vgg[model_name], num_epochs=args.num_epochs)

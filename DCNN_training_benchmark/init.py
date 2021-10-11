@@ -1,5 +1,6 @@
 
 # Importing libraries
+import torch
 import argparse
 import imageio
 import json
@@ -16,14 +17,9 @@ from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
 datetag = '2021-10-10'
 
-HOST = os.uname()[1]
-HOST = 'inv-ope-de06'
+HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
+HOST, device = 'inv-ope-de06', torch.device("cuda")
 
-#to plot & display 
-def pprint(message): #display function
-    print('-'*len(message))
-    print(message)
-    print('-'*len(message))
     
 # to store results
 import pandas as pd
@@ -81,43 +77,23 @@ else:
 # matplotlib parameters
 colors = ['b', 'r', 'k', 'g', 'm']
 fig_width = 20
-phi = (np.sqrt(5)+1)/2 # golden ratio
+phi = (np.sqrt(5)+1)/2 # golden ratio for the figures :-)
 
-# host variable 
-HOST = args.HOST
-
+#to plot & display 
+def pprint(message): #display function
+    print('-'*len(message))
+    print(message)
+    print('-'*len(message))
+    
 #DCCN training
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.autograd import Variable
-import torchvision
-from torchvision import datasets, models, transforms
-from torchvision.datasets import ImageFolder
+print('On date', args.datetag, ', Running benchmark on host', args.HOST, ' with device', device.type)
 
-# Select a device (CPU or CUDA)
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print('On date', datetag, ', Running benchmark on host', HOST, ' with device', device.type)
-
-# Datasets Configuration
-# see https://pytorch.org/hub/pytorch_vision_vgg/
-image_size = args.image_size # default image resolution
-image_sizes =  args.image_sizes # resolutions explored in experiment 2
-mean = np.array([0.485, 0.456, 0.406])
-std = np.array([0.229, 0.224, 0.225])
-transforms_norm = transforms.Normalize(mean=mean, std=std) # to normalize colors on the imagenet dataset
-
-
+# Labels Configuration
 N_labels = len(args.i_labels)
 id_dl = []
-model_filenames = {}
 
 paths = {}
-reverse_id_labels = {}
 N_images_per_class = {}
-labels = []
-
 for folder, N_image in zip(args.folders, args.N_images):
     paths[folder] = os.path.join(args.root, folder) # data path
     N_images_per_class[folder] = N_image
@@ -126,6 +102,8 @@ with open(args.class_loader, 'r') as fp: # get all the classes on the data_downl
     imagenet = json.load(fp)
 
 # gathering labels
+labels = []
+reverse_id_labels = {}
 for a, img_id in enumerate(imagenet):
     reverse_id_labels[str('n' + (imagenet[img_id]['id'].replace('-n','')))] = imagenet[img_id]['label'].split(',')[0]
     labels.append(imagenet[img_id]['label'].split(',')[0])

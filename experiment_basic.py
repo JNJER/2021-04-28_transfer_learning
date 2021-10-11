@@ -2,7 +2,7 @@
 #import model's script and set the output file
 from DCNN_training_benchmark.model import *
 #from experiment_train import *
-filename = f'results/{datetag}_results_1_{HOST}.json'
+filename = f'results/{datetag}_results_1_{args.HOST}.json'
 
 def main():
     try:
@@ -10,7 +10,7 @@ def main():
     except:
         df = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
         i_trial = 0
-        (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size, batch_size=1)
+        (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, batch_size=1)
         i_label_top = reverse_labels[image_datasets['test'].classes[label]]
         
         for i_image, (data, label) in enumerate(dataloaders['test']):

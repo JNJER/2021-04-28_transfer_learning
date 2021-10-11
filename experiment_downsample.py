@@ -1,6 +1,6 @@
 #import model's script and set the output file
 from DCNN_training_benchmark.model import *
-filename = f'results/{datetag}_results_2_{HOST}.json'
+filename = f'results/{datetag}_results_2_{args.HOST}.json'
 
 def main():
 
@@ -12,7 +12,7 @@ def main():
         i_trial = 0
 
         # image preprocessing
-        for image_size_ in image_sizes:
+        for image_size_ in args.image_sizes:
             (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size_, batch_size=1)
             print(f'Résolution de {image_size_=}')
             i_label_top = reverse_labels[image_datasets['test'].classes[label]]
