@@ -14,10 +14,10 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-#datetag = '2021-10-08'
+datetag = '2021-10-10'
 
 HOST = os.uname()[1]
-#HOST = 'inv-ope-de06'
+HOST = 'inv-ope-de06'
 
 #to plot & display 
 def pprint(message): #display function
@@ -101,6 +101,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('On date', datetag, ', Running benchmark on host', HOST, ' with device', device.type)
 
 # Datasets Configuration
+# see https://pytorch.org/hub/pytorch_vision_vgg/
 image_size = args.image_size # default image resolution
 image_sizes =  args.image_sizes # resolutions explored in experiment 2
 mean = np.array([0.485, 0.456, 0.406])

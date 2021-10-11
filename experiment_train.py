@@ -76,13 +76,13 @@ for model_name in args.model_names:
         param.require_grad = False 
 
     if model_name == 'vgg16_lin':
-        num_features = models_vgg[model_name].classifier[6].out_features
+        num_features = models_vgg[model_name].classifier[-1].out_features
         features = list(models_vgg[model_name].classifier.children())
-        features.extend([nn.Linear(num_features, n_output)])
+        features.extend([nn.Linear(num_features, n_output)]) # Adding one layer on top of last layer
         models_vgg[model_name].classifier = nn.Sequential(*features)
 
     else : 
-        num_features = models_vgg[model_name].classifier[6].in_features
+        num_features = models_vgg[model_name].classifier[-1].in_features
         features = list(models_vgg[model_name].classifier.children())[:-1] # Remove last layer
         features.extend([nn.Linear(num_features, n_output)]) # Add our layer with 10 outputs
         models_vgg[model_name].classifier = nn.Sequential(*features) # Replace the model classifier
