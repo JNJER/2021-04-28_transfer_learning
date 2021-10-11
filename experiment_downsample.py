@@ -30,10 +30,10 @@ def main():
                         _, indices = torch.sort(out, descending=True)
                         if model_name == 'vgg' : # our previous work
                             top_1 = labels[indices[0]]
-                            percentage = torch.nn.functional.softmax(out[args.i_labels], dim=0) * 100
-                            perf_ = percentage[reverse_i_labels[i_label_top]].item()
+                            percentage = torch.nn.functional.softmax(out[args.subset_i_labels], dim=0) * 100
+                            perf_ = percentage[reverse_subset_i_labels[i_label_top]].item()
                         else :
-                            top_1 = reverse_model_labels[indices[0]] 
+                            top_1 = subset_labels[indices[0]] 
                             percentage = torch.nn.functional.softmax(out, dim=0) * 100
                             perf_ = percentage[label].item()
                     dt = time.time() - tic

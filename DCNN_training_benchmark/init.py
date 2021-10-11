@@ -47,7 +47,7 @@ def arg_parse():
     parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
     parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.001)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
-    parser.add_argument("--i_labels", dest = 'i_labels', help="Set the labels of the classes (list of int)",
+    parser.add_argument("--subset_i_labels", dest = 'subset_i_labels', help="Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
     parser.add_argument("--class_loader", dest = 'class_loader', help = "Set the Directory containing imagenet downloaders class",
                         default = 'imagenet_label_to_wordnet_synset.json', type = str)
@@ -56,7 +56,7 @@ def arg_parse():
     parser.add_argument("--model_path", dest = 'model_path', help = "Set the path to the pre-trained model",
                         default = 'models/re-trained_', type = str)
     parser.add_argument("--model_names", dest = 'model_names', help = "Modes for the new trained networks",
-                        default = ['vgg16_gray', 'vgg16_lin', 'vgg16_gen', 'vgg16_scale',], type = list)
+                        default = ['vgg16_lin', 'vgg16_gen', 'vgg16_scale', 'vgg16_gray', ], type = list)
     return parser.parse_args()
 
 args = arg_parse()
@@ -89,7 +89,7 @@ def pprint(message): #display function
 print('On date', args.datetag, ', Running benchmark on host', args.HOST, ' with device', device.type)
 
 # Labels Configuration
-N_labels = len(args.i_labels)
+N_labels = len(args.subset_i_labels)
 id_dl = []
 
 paths = {}
@@ -107,7 +107,7 @@ reverse_id_labels = {}
 for a, img_id in enumerate(imagenet):
     reverse_id_labels[str('n' + (imagenet[img_id]['id'].replace('-n','')))] = imagenet[img_id]['label'].split(',')[0]
     labels.append(imagenet[img_id]['label'].split(',')[0])
-    if int(img_id) in args.i_labels:
+    if int(img_id) in args.subset_i_labels:
         id_dl.append('n' + (imagenet[img_id]['id'].replace('-n','')))    
         
 # a reverse look-up-table giving the index of a given label (within the whole set of imagenet labels)
@@ -115,15 +115,15 @@ reverse_labels = {}
 for i_label, label in enumerate(labels):
     reverse_labels[label] = i_label
 # a reverse look-up-table giving the index of a given i_label (within the sub-set of classes)
-reverse_i_labels = {}
-for i_label, label in enumerate(args.i_labels):
-    reverse_i_labels[label] = i_label
+reverse_subset_i_labels = {}
+for i_label, label in enumerate(args.subset_i_labels):
+    reverse_subset_i_labels[label] = i_label
     
 # a reverse look-up-table giving the label of a given index in the last layer of the new model (within the sub-set of classes)
-reverse_model_labels = []
+subset_labels = []
 pprint('List of Pre-selected classes : ')
 # choosing the selected classes for recognition
-for i_label, id_ in zip(args.i_labels, id_dl) : 
-    reverse_model_labels.append(labels[i_label])
+for i_label, id_ in zip(args.subset_i_labels, id_dl) : 
+    subset_labels.append(labels[i_label])
     print('-> label', i_label, '=', labels[i_label], '\nid wordnet : ', id_)
-reverse_model_labels.sort()
+subset_labels.sort()
