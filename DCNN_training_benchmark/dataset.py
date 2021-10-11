@@ -3,11 +3,8 @@ from DCNN_training_benchmark.init import *
 
 from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
 
-#IMG_EXT = ('jpg', 'jpeg', 'png', 'ppm', 'bmp', 'pgm', 'tif', 'tiff', 'webp')   
 verbose = False 
-save = True
 
-#Imagenet_urls_ILSVRC_2016 = []
 with open(args.url_loader) as json_file:
     Imagenet_urls_ILSVRC_2016 = json.load(json_file)
 
@@ -17,106 +14,46 @@ def clean_list(list_dir, patterns=['.DS_Store']):
     return list_dir
     
 def get_image(img_url, class_folder, timeout=3.):
-    worked = 0
-    to_save = True 
     if verbose:
         print(f'Processing {img_url}')
 
-    if len(img_url) <= 1:
-        to_save = False
-
-    try:
-        img_resp = requests.get(img_url, timeout=timeout)
-    except ConnectionError:
-        if verbose :
-            print(f"Connection Error for url {img_url}")
-        return fail_get_image()
-
-    except ReadTimeout:
-        if verbose :
-            print(f"Read Timeout for url {img_url}")
-        return fail_get_image()
-    
-    except TooManyRedirects:
-        if verbose :
-            print(f"Too many redirects {img_url}")
-        return fail_get_image()
-    
-    except MissingSchema:
-        if verbose :
-            print('MissingSchema failure')
-        return fail_get_image()
-    
-    except InvalidURL:
-        if verbose :
-            print('InvalidURL failure')
-        return fail_get_image()
-
-    if not 'content-type' in img_resp.headers and to_save :
-        if verbose :
-            print('No content-type')
-        to_save = False
-    elif not 'image' in img_resp.headers['content-type'] and to_save :
-        if verbose :
-            print('Not an image')
-        to_save = False
-        
-    if (len(img_resp.content) < 5000) and to_save :
-        if verbose :
-            print('Content to short')
-        to_save = False
-
     img_name = img_url.split('/')[-1]
+    # handle strange file names
     img_name = img_name.split("?")[0]
-
-    if (len(img_name) <= 1) and to_save:
-        if verbose :
-            print('Bad name for the image')
-        to_save = False
-    
-    if 'jpe' in img_name or 'gif' in img_name :
+    if ('jpe' in img_name) or ('gif' in img_name)  or (len(img_name) <= 1):
         if verbose :
             print('Bad format for the image')
-        to_save = False
-    
-    if img_name in os.listdir(class_folder):
-        worked = 1
-        return worked
-
-    # LuP some files miss the extension?
-    if not 'jpg' in img_name :
-        img_name += 'jpg'
-    
-    if to_save:               
-        img_file_path = os.path.join(class_folder, img_name)
-        if verbose :
-            print('Good URl, now saving...')
-        with open(img_file_path, 'wb') as img_f:
-            img_f.write(img_resp.content)
-            list_dir = os.listdir(class_folder)
-            worked = 1
-        return worked
-
     else:
-        return fail_get_image()
+        try:
+            img_resp = requests.get(img_url, timeout=timeout)
+            if not 'content-type' in img_resp.headers :
+                if verbose : print('No content-type')
+            elif not 'image' in img_resp.headers['content-type'] :
+                        if verbose : print('Not an image')
+            elif (len(img_resp.content) < 5000) :
+                if verbose : print('Content to short')
+            else:
+                # LuP some files miss the extension?
+                if not 'jpg' in img_name : img_name += 'jpg'
 
-def fail_get_image():
-    # LuP mais cette variable i n'est pas définie avant!
-    worked = 0
-    if verbose :
-        print(Imagenet_urls_ILSVRC_2016[str(class_wnid)].pop(i), ' does not work, deleting the url of the database')
-        return worked 
-    else :
-        del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
-        return worked 
+                img_file_path = os.path.join(class_folder, img_name)
+                if verbose : print('Good URl, now saving...')
+                with open(img_file_path, 'wb') as img_f:
+                    img_f.write(img_resp.content)
+                    list_dir = os.listdir(class_folder)
+                return True
+
+        except Exception as e:
+            if verbose : print(f"Failed with {e} for url {img_url}")
+    return False
 
 if not os.path.isdir(args.root):
     print(f'folder {args.root} did not exist! creating folder..')
-    os.makedirs(args.root)
+    os.makedirs(args.root, exist_ok=True)
 
 iter_ = 0    
 for folder in args.folders :
-    filename = f'results/{datetag}_dataset_{folder}_{HOST}.json'
+    filename = f'results/{datetag}_dataset_{folder}_{args.HOST}.json'
     # check if the folder exists
     if os.path.isdir(paths[folder]):
         list_dir = list_dir = clean_list(os.listdir(paths[folder]))
@@ -151,7 +88,13 @@ for folder in args.folders :
                         break
                     tic = time.time()
                     worked = get_image(resp, class_folder)
-                    dt = time.time() - tic
+                    if not worked:
+                        if verbose :
+                            print(Imagenet_urls_ILSVRC_2016[str(class_wnid)].pop(i), ' does not work, deleting the url of the database')
+                        else :
+                            del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
+
+                            dt = time.time() - tic
                     if 'flickr' in resp:
                         is_flickr = 1
                     if verbose: 
@@ -173,7 +116,7 @@ for folder in args.folders :
     elif len(os.listdir(paths[folder])) == N_labels :
         pprint(f'The folder already contains : {len(list_dir)} classes')
 
-    elif False : # if there are to many folders delete some # LuP : vraiment nécessaire?
+    elif False : # if there are too many folders delete some # LuP : vraiment nécessaire?
         print('The folder have to many classes, deleting some')
         for elem in clean_list(os.listdir(paths[folder])):
             list_files = clean_list(os.listdir(f'{paths[folder]}/{elem}'))
@@ -189,9 +132,8 @@ for folder in args.folders :
         
     iter_ += N_images_per_class[folder]
     
-if save : 
-    # replace the file with that URLs that worked
-    json_fname = 'Imagenet_urls_ILSVRC_2016.json'
-    print(f'Creating file {json_fname}')
-    with open(json_fname, 'wt') as f:
+if False: 
+    # replace the file with that URLs that worked - removes the ones that failed
+    print(f'Replacing file {args.url_loader}')
+    with open(args.url_loader, 'wt') as f:
         json.dump(Imagenet_urls_ILSVRC_2016, f, indent=4)
