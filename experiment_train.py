@@ -1,4 +1,4 @@
-from DCNN_training_benchmark.model import *
+from DCNN_transfer_learning.model import *
 import torch.nn as nn
 
 def train_model(model, num_epochs, lr=args.lr, momentum=args.momentum, log_interval=100):
@@ -109,10 +109,11 @@ for model_name in args.model_names:
                 print(f"Traning {model_name}, image_size = {image_size_}, p (Grayscale) = {p}")
                 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size_, p=p)
                 models_vgg[model_name], df_train_ = train_model(models_vgg[model_name], num_epochs=args.num_epochs)
-                df_train = df_train_ if df_train is None else df_train.append(df_train_.reset_index(inplace=True))
+                df_train = df_train_ if df_train is None else df_train.append(df_train_, ignore_index=True)
+                #df_train = df_train_ if df_train is None else pd.concat([df_train, df_train_], ignore_index=True)
         else :
-            print(f"Traning {model_name}, image_size = {image_size}, p (Grayscale) = {p}")
-            (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size, p=p)
+            print(f"Traning {model_name}, image_size = {args.image_size}, p (Grayscale) = {p}")
+            (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, p=p)
             models_vgg[model_name], df_train = train_model(models_vgg[model_name], num_epochs=args.num_epochs)
         torch.save(models_vgg[model_name].state_dict(), model_filenames[model_name])
         df_train.to_json(filename)

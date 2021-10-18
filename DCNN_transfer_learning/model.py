@@ -1,5 +1,5 @@
 
-from DCNN_training_benchmark.init import *
+from DCNN_transfer_learning.init import *
 
 import torchvision
 from torchvision import datasets, models, transforms
@@ -40,6 +40,8 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
             transforms_norm ]),
     }
     #print(paths)
+    
+
     image_datasets = {
         folder: datasets.ImageFolder(
             paths[folder], 

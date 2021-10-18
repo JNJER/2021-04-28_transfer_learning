@@ -15,7 +15,7 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-datetag = '2021-10-10'
+datetag = '2021-10-12'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
 HOST, device = 'inv-ope-de06', torch.device("cuda")
@@ -27,13 +27,13 @@ import pandas as pd
 def arg_parse():
     DEBUG = 25
     DEBUG = 1
-    parser = argparse.ArgumentParser(description='DCNN_training_benchmark/init.py set root')
+    parser = argparse.ArgumentParser(description='DCNN_transfer_learning/init.py set root')
     parser.add_argument("--root", dest = 'root', help = "Directory containing images to perform the training",
                         default = 'data', type = str)
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",
-                        default = [400//DEBUG, 200//DEBUG, 800//DEBUG], type = list)
+                        default = [400//DEBUG, 200//DEBUG, 1000//DEBUG], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = "Set the name of your machine",
                     default=HOST, type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = "Set the datetag of the result's file",
@@ -45,7 +45,7 @@ def arg_parse():
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = "Set the number of epoch to perform during the traitransportationning phase",
                     default = 50//DEBUG)
     parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
-    parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.001)
+    parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.002)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
     parser.add_argument("--subset_i_labels", dest = 'subset_i_labels', help="Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
@@ -97,6 +97,7 @@ N_images_per_class = {}
 for folder, N_image in zip(args.folders, args.N_images):
     paths[folder] = os.path.join(args.root, folder) # data path
     N_images_per_class[folder] = N_image
+    os.makedirs(paths[folder], exist_ok=True)
     
 with open(args.class_loader, 'r') as fp: # get all the classes on the data_downloader
     imagenet = json.load(fp)

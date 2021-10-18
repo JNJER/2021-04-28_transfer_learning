@@ -1,5 +1,5 @@
 
-from DCNN_training_benchmark.init import *  
+from DCNN_transfer_learning.init import *  
 
 from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
 
@@ -79,7 +79,6 @@ for folder in args.folders :
             list_dir = os.listdir(class_folder)
             #for i, j in enumerate(Imagenet_urls_ILSVRC_2016[str(class_wnid)]):
             for i in range(iter_, len(Imagenet_urls_ILSVRC_2016[str(class_wnid)]), 1):
-                is_flickr = 0
                 if len(list_dir) < N_images_per_class[folder] :
                     tentativ_ +=1
                     try :
@@ -94,12 +93,10 @@ for folder in args.folders :
                         else :
                             del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
 
-                            dt = time.time() - tic
-                    if 'flickr' in resp:
-                        is_flickr = 1
+                    dt = time.time() - tic
                     if verbose: 
                         print('is_flickr :', is_flickr,'dt :', dt,'worked :', worked, 'class_wnid : ', class_wnid, 'class_name :', class_name)
-                    df_dataset.loc[tentativ_] = {'is_flickr':is_flickr,'dt':dt,'lab_work':worked, 'class_wnid':class_wnid, 'class_name':class_name}
+                    df_dataset.loc[tentativ_] = {'is_flickr':1 if 'flickr' in resp else 0,'dt':dt,'lab_work':worked, 'class_wnid':class_wnid, 'class_name':class_name}
                     list_dir = os.listdir(class_folder)
                     print(f'\r{len(list_dir)} / {N_images_per_class[folder]}', end='', flush=True)
                 else:
@@ -109,7 +106,7 @@ for folder in args.folders :
             if len(list_dir) < N_images_per_class[folder] :
                 print('Not anough working url to complete the dataset') 
         list_dir = os.listdir(paths[folder])
-        if save :
+        if True :
             df_dataset.to_json(filename)
 
 

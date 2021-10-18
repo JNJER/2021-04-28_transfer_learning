@@ -1,19 +1,21 @@
 
 #import model's script and set the output file
-from DCNN_training_benchmark.model import *
+from DCNN_transfer_learning.model import *
 #from experiment_train import *
 filename = f'results/{datetag}_results_1_{args.HOST}.json'
-
+print(f'{filename=}')
 def main():
-    try:
+    if os.path.isfile(filename):
+        print('True')
         df = pd.read_json(filename)
-    except:
+    else:
         df = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
         i_trial = 0
         (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, batch_size=1)
-        i_label_top = reverse_labels[image_datasets['test'].classes[label]]
-        
+        print(len(dataloaders['test']))
         for i_image, (data, label) in enumerate(dataloaders['test']):
+            i_label_top = reverse_labels[image_datasets['test'].classes[label]]
+
             data, label = data.to(device), label.to(device)
             for model_name in models_vgg.keys():
                 model = models_vgg[model_name]
@@ -40,5 +42,4 @@ def main():
                 i_trial += 1
         df.to_json(filename)
 
-if __name__ == "__main__":
-    main()    
+main()    
