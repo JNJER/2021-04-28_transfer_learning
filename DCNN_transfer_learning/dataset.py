@@ -112,20 +112,6 @@ for folder in args.folders :
 
     elif len(os.listdir(paths[folder])) == N_labels :
         pprint(f'The folder already contains : {len(list_dir)} classes')
-
-    elif False : # if there are too many folders delete some # LuP : vraiment nécessaire?
-        print('The folder have to many classes, deleting some')
-        for elem in clean_list(os.listdir(paths[folder])):
-            list_files = clean_list(os.listdir(f'{paths[folder]}/{elem}'))
-            if len(os.listdir(paths[folder])) > N_labels :
-                for fname in list_files:
-                    os.remove(f'{paths[folder]}/{elem}/{fname}') # delete exces folders
-                try:
-                    os.rmdir(f'{paths[folder]}/{elem}')
-                except:
-                    os.remove(f'{paths[folder]}/{elem}')
-        list_dir = os.listdir(paths[folder])
-        pprint("Now the folder " + folder + " contains :" + str(list_dir))
         
     iter_ += N_images_per_class[folder]
     

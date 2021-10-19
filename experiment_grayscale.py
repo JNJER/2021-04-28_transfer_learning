@@ -1,16 +1,14 @@
 
 #import model's script and set the output file
-from DCNN_training_benchmark.model import *
+from DCNN_transfer_learning.model import *
 filename = f'results/{datetag}_results_3_{args.HOST}.json'
 
 def main():
-    # Output's set up
-    try:
+    if os.path.isfile(filename):
         df_gray = pd.read_json(filename)
-    except:
-        df_gray = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
+    else:
         i_trial = 0
-
+        df_gray = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
         # image preprocessing setting a grayscale output
         (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, p=1, batch_size=1)
 
@@ -44,6 +42,4 @@ def main():
                 i_trial += 1
         df_gray.to_json(filename)
 
-
-if __name__ == "__main__":
-    main()    
+main()    

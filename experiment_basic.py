@@ -6,23 +6,22 @@ filename = f'results/{datetag}_results_1_{args.HOST}.json'
 print(f'{filename=}')
 def main():
     if os.path.isfile(filename):
-        print('True')
         df = pd.read_json(filename)
     else:
-        df = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
         i_trial = 0
+        df = pd.DataFrame([], columns=['model', 'perf', 'fps', 'time', 'label', 'i_label', 'i_image', 'filename', 'device_type', 'top_1']) 
         (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, batch_size=1)
-        print(len(dataloaders['test']))
-        for i_image, (data, label) in enumerate(dataloaders['test']):
-            i_label_top = reverse_labels[image_datasets['test'].classes[label]]
-
+        
+        for i_image, (data, label) in enumerate(dataloaders['test']):            
             data, label = data.to(device), label.to(device)
+            
             for model_name in models_vgg.keys():
                 model = models_vgg[model_name]
                 model = model.to(device)
-                tic = time.time()
 
                 with torch.no_grad():
+                    i_label_top = reverse_labels[image_datasets['test'].classes[label]]
+                    tic = time.time()
                     out = model(data).squeeze(0)
                     _, indices = torch.sort(out, descending=True)
                     if model_name == 'vgg' : # our previous work
@@ -33,8 +32,8 @@ def main():
                         top_1 = subset_labels[indices[0]] 
                         percentage = torch.nn.functional.softmax(out, dim=0) * 100
                         perf_ = percentage[label].item()
-                
-                elapsed_time = time.time() - tic
+                    elapsed_time = time.time() - tic
+                    
                 print(f'The {model_name} model get {labels[i_label_top]} at {perf_:.2f} % confidence in {elapsed_time:.3f} seconds, best confidence for : {top_1}')
                 df.loc[i_trial] = {'model':model_name, 'perf':perf_, 'time':elapsed_time, 'fps': 1/elapsed_time,
                                    'label':labels[i_label_top], 'i_label':i_label_top, 
