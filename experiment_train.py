@@ -108,7 +108,7 @@ for model_name in args.model_names:
             for image_size_ in args.image_sizes: # starting with low resolution images 
                 print(f"Traning {model_name}, image_size = {image_size_}, p (Grayscale) = {p}")
                 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=image_size_, p=p)
-                models_vgg[model_name], df_train_ = train_model(models_vgg[model_name], num_epochs=args.num_epochs/len(args.image_sizes))
+                models_vgg[model_name], df_train_ = train_model(models_vgg[model_name], num_epochs=args.num_epochs//len(args.image_sizes))
                 df_train = df_train_ if df_train is None else df_train.append(df_train_, ignore_index=True)
         else :
             print(f"Traning {model_name}, image_size = {args.image_size}, p (Grayscale) = {p}")

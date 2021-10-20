@@ -54,17 +54,9 @@ if not os.path.isdir(args.root):
 iter_ = 0    
 for folder in args.folders :
     filename = f'results/{datetag}_dataset_{folder}_{args.HOST}.json'
-    # check if the folder exists
-    if os.path.isdir(paths[folder]):
-        list_dir = list_dir = clean_list(os.listdir(paths[folder]))
-        print("The folder", folder, " already exists, it includes: ", list_dir)
-    else :
-        # no folder, creating one 
-        print(f"No existing path match for this folder, creating a folder at {paths[folder]}")
-        os.makedirs(paths[folder])
-
-    list_dir = os.listdir(paths[folder])
-    list_dir = clean_list(list_dir)
+    os.makedirs(paths[folder], exist_ok=True)
+    list_dir = clean_list(os.listdir(paths[folder]))
+        
     # if the folder is empty, download the images using the ImageNet-Datasets-Downloader
     if len(list_dir) < N_labels: 
         df_dataset = pd.DataFrame([], columns=['is_flickr', 'dt', 'lab_work', 'class_wnid', 'class_name'])
@@ -74,8 +66,7 @@ for folder in args.folders :
             class_name = reverse_id_labels[class_wnid]
             print(f'Scraping images for class \"{class_name}\"')
             class_folder = os.path.join(paths[folder], class_name)
-            if not os.path.exists(class_folder):
-                os.mkdir(class_folder)                      
+            os.makedirs(class_folder, exist_ok=True)                      
             list_dir = os.listdir(class_folder)
             #for i, j in enumerate(Imagenet_urls_ILSVRC_2016[str(class_wnid)]):
             for i in range(iter_, len(Imagenet_urls_ILSVRC_2016[str(class_wnid)]), 1):
