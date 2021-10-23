@@ -1,5 +1,4 @@
 from DCNN_transfer_learning.model import *
-import torch.nn as nn
 
 def train_model(model, num_epochs, dataloaders, lr=args.lr, momentum=args.momentum, log_interval=100):
     

@@ -1,5 +1,6 @@
 
 #import model's script and set the output file
+from DCNN_transfer_learning.model import *
 from experiment_train import train_model
 filename = f'results/{datetag}_train_scan_{args.HOST}.json'
 print(f'{filename=}')

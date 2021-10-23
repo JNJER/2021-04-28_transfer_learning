@@ -4,6 +4,7 @@ from DCNN_transfer_learning.init import *
 import torchvision
 from torchvision import datasets, models, transforms
 from torchvision.datasets import ImageFolder
+import torch.nn as nn
 
 # normalization used to train VGG
 # see https://pytorch.org/hub/pytorch_vision_vgg/
