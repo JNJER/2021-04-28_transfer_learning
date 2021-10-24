@@ -12,7 +12,7 @@ def main(N_scan=7, base=10, N_avg=10):
         df_scan = pd.read_json(filename)
     else:
         i_trial = 0
-        df = pd.DataFrame([], columns=measure_columns) 
+        df_scan = pd.DataFrame([], columns=measure_columns) 
         for i_trial, lr  in enumerate(args.lr * np.logspace(-1, 1, N_scan, base=base)):
 
             # Training and saving the network
@@ -32,7 +32,6 @@ def main(N_scan=7, base=10, N_avg=10):
             (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, p=0)
             models_vgg_, df_train = train_model(models_vgg_, num_epochs=args.num_epochs//4, dataloaders=dataloaders)
 
-            df_train.to_json(filename)
             elapsed_time = time.time() - since
             print(f"Training completed in {elapsed_time // 60:.0f}m {elapsed_time % 60:.0f}s")
 
