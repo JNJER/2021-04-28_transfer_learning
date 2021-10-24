@@ -18,7 +18,7 @@ from scipy import stats
 from scipy.special import logit, expit
 
 # VGG-16 datasets initialisation
-def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_size=args.batch_size):
+def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_size=args.batch_size, **kwargs):
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize((int(image_size), int(image_size))),

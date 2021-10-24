@@ -1,6 +1,6 @@
 from DCNN_transfer_learning.model import *
 
-def train_model(model, num_epochs, dataloaders, lr=args.lr, momentum=args.momentum, log_interval=100):
+def train_model(model, num_epochs, dataloaders, lr=args.lr, momentum=args.momentum, log_interval=100, **kwargs):
     
     model.to(device)
     if momentum == 0.: # TODO : try Adam?
