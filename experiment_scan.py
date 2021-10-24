@@ -2,7 +2,6 @@
 #import model's script and set the output file
 from DCNN_transfer_learning.model import *
 from experiment_train import train_model
-print(f'{filename=}')
 
 
 def main(N_scan=7, base=10, N_avg=10):
@@ -12,6 +11,7 @@ def main(N_scan=7, base=10, N_avg=10):
 
     for key in scan_dicts:
         filename = f'results/{datetag}_train_scan_{key}_{args.HOST}.json'
+        print(f'{filename=}')
         if os.path.isfile(filename):
             df_scan = pd.read_json(filename)
         else:
