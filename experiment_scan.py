@@ -3,11 +3,11 @@
 from DCNN_transfer_learning.model import *
 from experiment_train import train_model
 
+scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
+             'lr': args.lr * np.logspace(-1, 1, 7, base=10),
+            }
 
-def main(N_scan=7, base=10, N_avg=10):
-    scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
-                 'lr': args.lr * np.logspace(-1, 1, N_scan, base=base),
-                }
+def main(N_avg=10):
 
     for key in scan_dicts:
         filename = f'results/{datetag}_train_scan_{key}_{args.HOST}.json'
@@ -21,6 +21,7 @@ def main(N_scan=7, base=10, N_avg=10):
             df_scan = pd.DataFrame([], columns=measure_columns) 
             for i_trial, value in enumerate(scan_dicts[key]):
                 new_kwarg = {key: value}
+                print('trial', i_trial, ' /', len(scan_dicts[key]))
                 print('new_kwarg', new_kwarg)
                 # Training and saving the network
                 models_vgg_ = torchvision.models.vgg16(pretrained=True)

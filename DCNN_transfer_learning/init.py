@@ -18,7 +18,7 @@ datetag = strftime("%Y-%m-%d", gmtime())
 datetag = '2021-10-21'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#HOST, device = 'inv-ope-de06', torch.device("cuda")
+HOST, device = 'inv-ope-de06', torch.device("cuda")
 
     
 # to store results
