@@ -14,10 +14,10 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-#datetag = '2021-10-21'
+datetag = '2021-10-26'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#HOST, device = 'inv-ope-de06', torch.device("cuda")
+HOST, device = 'inv-ope-de06', torch.device("cuda")
 
     
 # to store results
@@ -46,6 +46,7 @@ def arg_parse():
     parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 32)
     parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.0001)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
+    parser.add_argument("--beta2", dest = 'beta2', help="Set the second momentum - use zero for SGD", default = 0.)
     parser.add_argument("--subset_i_labels", dest = 'subset_i_labels', help="Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
     parser.add_argument("--class_loader", dest = 'class_loader', help = "Set the Directory containing imagenet downloaders class",
