@@ -1,6 +1,6 @@
 
 from DCNN_transfer_learning.init import *  
-verbose = True
+verbose = False
 
 with open(args.url_loader) as json_file:
     Imagenet_urls_ILSVRC_2016 = json.load(json_file)
@@ -75,22 +75,11 @@ for folder in args.folders :
             # pick and remove element from shuffled list 
             img_url = list_urls[class_wnid].pop()
             
-            if True: #len(df_dataset[df_dataset['img_url']==img_url])==0 : # we have not yet tested this URL yet
+            if len(df_dataset[df_dataset['img_url']==img_url])==0 : # we have not yet tested this URL yet
 
                 # Transform URL into filename
-                if False:
-                    img_name = img_url.split('/')[-1]
-                    # handle strange file names
-                    img_name = img_name.split("?")[0]
-                    # lowercase
-                    img_name = img_name.lower()
-                    # replace jpeg par jpg
-                    img_name = img_name.replace('jpeg', 'jpg')
-                    # some files miss the extension?
-                    if not '.jpg' in img_name : img_name += '.jpg'
-                else:
-                    # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
-                    img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
+                # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
+                img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
 
                 if img_url.split('.')[-1] in ['jpe', 'gif']:
                     if verbose: print('Bad extension for the img_url', img_url)
@@ -104,13 +93,11 @@ for folder in args.folders :
                     if worked:
                         if verbose : print('Good URl, now saving', img_url, ' in', class_folder, ' as', img_name)
                         imageio.imsave(os.path.join(class_folder, img_name), img_content, format='png')
-                        #with open(os.path.join(class_folder, img_name), 'wb') as img_fileobject:
-                        #    img_fileobject.write(img_content)
                         list_img_name_used[class_wnid].append(img_name)
                     df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':dt,
                                 'worked':worked, 'class_wnid':class_wnid, 'class_name':class_name}
 
-                print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='', flush=not verbose)
+                print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='' if verbose else '\n', flush=not verbose)
             #print('\n')
         if (len(clean_list(os.listdir(class_folder))) < N_images_per_class[folder]) and (len(list_urls[class_wnid]) == 0): 
             print('Not enough working url to complete the dataset') 
