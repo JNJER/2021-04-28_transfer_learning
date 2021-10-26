@@ -5,6 +5,7 @@ from experiment_train import train_model
 
 scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
              'lr': args.lr * np.logspace(-1, 1, 7, base=10),
+             'momentum': 1 - np.logspace(-3, -.5, 7, base=10),
             }
 
 def main(N_avg=10):

@@ -2,7 +2,6 @@
 # Importing libraries
 import torch
 import argparse
-import imageio
 import json
 import matplotlib.pyplot as plt
 plt.rc('xtick', labelsize=18)    # fontsize of the tick labels
@@ -15,10 +14,10 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-datetag = '2021-10-21'
+#datetag = '2021-10-21'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
-HOST, device = 'inv-ope-de06', torch.device("cuda")
+#HOST, device = 'inv-ope-de06', torch.device("cuda")
 
     
 # to store results
@@ -33,7 +32,7 @@ def arg_parse():
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",
-                        default = [400//DEBUG, 200//DEBUG, 1000//DEBUG], type = list)
+                        default = [400//DEBUG, 200//DEBUG, 800//DEBUG], type = list)
     parser.add_argument("--HOST", dest = 'HOST', help = "Set the name of your machine",
                     default=HOST, type = str)
     parser.add_argument("--datetag", dest = 'datetag', help = "Set the datetag of the result's file",
@@ -44,8 +43,8 @@ def arg_parse():
                     default = [64, 128, 256, 512], type = list)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = "Set the number of epoch to perform during the traitransportationning phase",
                     default = 200//DEBUG)
-    parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
-    parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.001)
+    parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 32)
+    parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.0001)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
     parser.add_argument("--subset_i_labels", dest = 'subset_i_labels', help="Set the labels of the classes (list of int)",
                     default = [945, 513, 886, 508, 786, 310, 373, 145, 146, 396], type = list)
@@ -90,7 +89,6 @@ print('On date', args.datetag, ', Running benchmark on host', args.HOST, ' with 
 
 # Labels Configuration
 N_labels = len(args.subset_i_labels)
-id_dl = []
 
 paths = {}
 N_images_per_class = {}
@@ -104,12 +102,13 @@ with open(args.class_loader, 'r') as fp: # get all the classes on the data_downl
 
 # gathering labels
 labels = []
+class_wnids = []
 reverse_id_labels = {}
 for a, img_id in enumerate(imagenet):
     reverse_id_labels[str('n' + (imagenet[img_id]['id'].replace('-n','')))] = imagenet[img_id]['label'].split(',')[0]
     labels.append(imagenet[img_id]['label'].split(',')[0])
     if int(img_id) in args.subset_i_labels:
-        id_dl.append('n' + (imagenet[img_id]['id'].replace('-n','')))    
+        class_wnids.append('n' + (imagenet[img_id]['id'].replace('-n','')))    
         
 # a reverse look-up-table giving the index of a given label (within the whole set of imagenet labels)
 reverse_labels = {}
@@ -124,7 +123,7 @@ for i_label, label in enumerate(args.subset_i_labels):
 subset_labels = []
 pprint('List of Pre-selected classes : ')
 # choosing the selected classes for recognition
-for i_label, id_ in zip(args.subset_i_labels, id_dl) : 
+for i_label, id_ in zip(args.subset_i_labels, class_wnids) : 
     subset_labels.append(labels[i_label])
     print('-> label', i_label, '=', labels[i_label], '\nid wordnet : ', id_)
 subset_labels.sort()

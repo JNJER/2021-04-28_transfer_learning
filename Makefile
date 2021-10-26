@@ -8,7 +8,7 @@ all:
 
 clean:
 	rm -fr ./data
-	rm -fr ./model
+	rm -fr ./models
 
 install_local:
 	python3 -m pip install --user -r requirements.txt
