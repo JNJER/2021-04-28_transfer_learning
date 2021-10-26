@@ -1,9 +1,6 @@
 
 from DCNN_transfer_learning.init import *  
-
-from requests.exceptions import ConnectionError, ReadTimeout, TooManyRedirects, MissingSchema, InvalidURL
-
-verbose = False 
+verbose = True
 
 with open(args.url_loader) as json_file:
     Imagenet_urls_ILSVRC_2016 = json.load(json_file)
@@ -12,101 +9,117 @@ def clean_list(list_dir, patterns=['.DS_Store']):
     for pattern in patterns:
         if pattern in list_dir: list_dir.remove('.DS_Store')
     return list_dir
-    
-def get_image(img_url, class_folder, timeout=3.):
+
+import imageio
+def get_image(img_url, timeout=3., min_content=5000, verbose=verbose):
     if verbose:
         print(f'Processing {img_url}')
+    try:
+        img_resp = imageio.imread(img_url)
+        if verbose : print(f"Success with url {img_url}")
+        #img_resp = requests.get(img_url, timeout=timeout)
+        #if not 'content-type' in img_resp.headers :
+        #    if verbose : print('No content-type')
+        #    return False # did not work
+        #elif not 'image' in img_resp.headers['content-type'] :
+        #    if verbose : print('Not an image')
+        #    return False # did not work
+        #elif (len(img_resp.content) < min_content) :
+        #    if verbose : print('Content to short')
+        #    return False # did not work
+        #else:
+        #    return img_resp.content # worked!
+        return img_resp
+    except Exception as e:
+        if verbose : print(f"Failed with {e} for url {img_url}")
+        return False # did not work
 
-    img_name = img_url.split('/')[-1]
-    # handle strange file names
-    img_name = img_name.split("?")[0]
-    if ('jpe' in img_name) or ('gif' in img_name)  or (len(img_name) <= 1):
-        if verbose :
-            print('Bad format for the image')
-    else:
-        try:
-            img_resp = requests.get(img_url, timeout=timeout)
-            if not 'content-type' in img_resp.headers :
-                if verbose : print('No content-type')
-            elif not 'image' in img_resp.headers['content-type'] :
-                        if verbose : print('Not an image')
-            elif (len(img_resp.content) < 5000) :
-                if verbose : print('Content to short')
-            else:
-                # LuP some files miss the extension?
-                if not 'jpg' in img_name : img_name += 'jpg'
-
-                img_file_path = os.path.join(class_folder, img_name)
-                if verbose : print('Good URl, now saving...')
-                with open(img_file_path, 'wb') as img_f:
-                    img_f.write(img_resp.content)
-                    list_dir = os.listdir(class_folder)
-                return True
-
-        except Exception as e:
-            if verbose : print(f"Failed with {e} for url {img_url}")
-    return False
-
-if not os.path.isdir(args.root):
-    print(f'folder {args.root} did not exist! creating folder..')
-    os.makedirs(args.root, exist_ok=True)
-
-iter_ = 0    
-for folder in args.folders :
-    filename = f'results/{datetag}_dataset_{folder}_{args.HOST}.json'
+import hashlib # jah.
+# root folder
+os.makedirs(args.root, exist_ok=True)
+# train, val and test folders
+for folder in args.folders : 
     os.makedirs(paths[folder], exist_ok=True)
-    list_dir = clean_list(os.listdir(paths[folder]))
-        
-    # if the folder is empty, download the images using the ImageNet-Datasets-Downloader
-    if len(list_dir) < N_labels: 
-        df_dataset = pd.DataFrame([], columns=['is_flickr', 'dt', 'lab_work', 'class_wnid', 'class_name'])
-        tentativ_ = 0
-        print(f'The {folder} folder does not have anough classes, downloading some more \n') 
-        for class_wnid in id_dl:
-            class_name = reverse_id_labels[class_wnid]
-            print(f'Scraping images for class \"{class_name}\"')
-            class_folder = os.path.join(paths[folder], class_name)
-            os.makedirs(class_folder, exist_ok=True)                      
-            list_dir = os.listdir(class_folder)
-            #for i, j in enumerate(Imagenet_urls_ILSVRC_2016[str(class_wnid)]):
-            for i in range(iter_, len(Imagenet_urls_ILSVRC_2016[str(class_wnid)]), 1):
-                if len(list_dir) < N_images_per_class[folder] :
-                    tentativ_ +=1
-                    try :
-                        resp = Imagenet_urls_ILSVRC_2016[str(class_wnid)][i]
-                    except : 
-                        break
-                    tic = time.time()
-                    worked = get_image(resp, class_folder)
-                    if not worked:
-                        if verbose :
-                            print(Imagenet_urls_ILSVRC_2016[str(class_wnid)].pop(i), ' does not work, deleting the url of the database')
-                        else :
-                            del(Imagenet_urls_ILSVRC_2016[str(class_wnid)][i])
-
-                    dt = time.time() - tic
-                    if verbose: 
-                        print('is_flickr :', is_flickr,'dt :', dt,'worked :', worked, 'class_wnid : ', class_wnid, 'class_name :', class_name)
-                    df_dataset.loc[tentativ_] = {'is_flickr':1 if 'flickr' in resp else 0,'dt':dt,'lab_work':worked, 'class_wnid':class_wnid, 'class_name':class_name}
-                    list_dir = os.listdir(class_folder)
-                    print(f'\r{len(list_dir)} / {N_images_per_class[folder]}', end='', flush=True)
-                else:
-                    print(f'\r{len(list_dir)} / {N_images_per_class[folder]}', end='', flush=True)
-                    break
-            print('\n')
-            if len(list_dir) < N_images_per_class[folder] :
-                print('Not anough working url to complete the dataset') 
-        list_dir = os.listdir(paths[folder])
-        if True :
-            df_dataset.to_json(filename)
-
-
-    elif len(os.listdir(paths[folder])) == N_labels :
-        pprint(f'The folder already contains : {len(list_dir)} classes')
-        
-    iter_ += N_images_per_class[folder]
     
+list_urls = {}
+list_img_name_used = {}
+for class_wnid in class_wnids:
+    list_urls[class_wnid] =  Imagenet_urls_ILSVRC_2016[str(class_wnid)]
+    np.random.shuffle(list_urls[class_wnid])
+    list_img_name_used[class_wnid] = []
+
+    # a folder per class in each train, val and test folder
+    for folder in args.folders : 
+        class_name = reverse_id_labels[class_wnid]
+        class_folder = os.path.join(paths[folder], class_name)
+        os.makedirs(class_folder, exist_ok=True)
+        list_img_name_used[class_wnid] += clean_list(os.listdir(class_folder)) # join two lists
+    
+# train, val and test folders
+for folder in args.folders : 
+    print(f'Folder \"{folder}\"')
+
+    filename = f'results/{datetag}_dataset_{folder}_{args.HOST}.json'
+    columns = ['img_url', 'img_name', 'is_flickr', 'dt', 'worked', 'class_wnid', 'class_name']
+    if os.path.isfile(filename):
+        df_dataset = pd.read_json(filename)
+    else:
+        df_dataset = pd.DataFrame([], columns=columns)
+
+    for class_wnid in class_wnids:
+        class_name = reverse_id_labels[class_wnid]
+        print(f'Scraping images for class \"{class_name}\"')
+        class_folder = os.path.join(paths[folder], class_name)
+        while (len(clean_list(os.listdir(class_folder))) < N_images_per_class[folder]) and (len(list_urls[class_wnid]) > 0):
+
+            # pick and remove element from shuffled list 
+            img_url = list_urls[class_wnid].pop()
+            
+            if True: #len(df_dataset[df_dataset['img_url']==img_url])==0 : # we have not yet tested this URL yet
+
+                # Transform URL into filename
+                if False:
+                    img_name = img_url.split('/')[-1]
+                    # handle strange file names
+                    img_name = img_name.split("?")[0]
+                    # lowercase
+                    img_name = img_name.lower()
+                    # replace jpeg par jpg
+                    img_name = img_name.replace('jpeg', 'jpg')
+                    # some files miss the extension?
+                    if not '.jpg' in img_name : img_name += '.jpg'
+                else:
+                    # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
+                    img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
+
+                if img_url.split('.')[-1] in ['jpe', 'gif']:
+                    if verbose: print('Bad extension for the img_url', img_url)
+                # make sure it was not used in other folders
+                elif not (img_name in list_img_name_used[class_wnid]):
+                    tic = time.time()
+                    img_content = get_image(img_url, verbose=verbose)
+                    dt = time.time() - tic
+                    
+                    worked = img_content is not False
+                    if worked:
+                        if verbose : print('Good URl, now saving', img_url, ' in', class_folder, ' as', img_name)
+                        imageio.imsave(os.path.join(class_folder, img_name), img_content, format='png')
+                        #with open(os.path.join(class_folder, img_name), 'wb') as img_fileobject:
+                        #    img_fileobject.write(img_content)
+                        list_img_name_used[class_wnid].append(img_name)
+                    df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':dt,
+                                'worked':worked, 'class_wnid':class_wnid, 'class_name':class_name}
+
+                print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='', flush=not verbose)
+            #print('\n')
+        if (len(clean_list(os.listdir(class_folder))) < N_images_per_class[folder]) and (len(list_urls[class_wnid]) == 0): 
+            print('Not enough working url to complete the dataset') 
+    
+    df_dataset.to_json(filename)
+
+
 if False: 
+    
     # replace the file with that URLs that worked - removes the ones that failed
     print(f'Replacing file {args.url_loader}')
     with open(args.url_loader, 'wt') as f:
