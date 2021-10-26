@@ -12,23 +12,9 @@ def clean_list(list_dir, patterns=['.DS_Store']):
 
 import imageio
 def get_image(img_url, timeout=3., min_content=5000, verbose=verbose):
-    if verbose:
-        print(f'Processing {img_url}')
     try:
         img_resp = imageio.imread(img_url)
         if verbose : print(f"Success with url {img_url}")
-        #img_resp = requests.get(img_url, timeout=timeout)
-        #if not 'content-type' in img_resp.headers :
-        #    if verbose : print('No content-type')
-        #    return False # did not work
-        #elif not 'image' in img_resp.headers['content-type'] :
-        #    if verbose : print('Not an image')
-        #    return False # did not work
-        #elif (len(img_resp.content) < min_content) :
-        #    if verbose : print('Content to short')
-        #    return False # did not work
-        #else:
-        #    return img_resp.content # worked!
         return img_resp
     except Exception as e:
         if verbose : print(f"Failed with {e} for url {img_url}")
@@ -83,6 +69,7 @@ for folder in args.folders :
 
                 if img_url.split('.')[-1] in ['jpe', 'gif']:
                     if verbose: print('Bad extension for the img_url', img_url)
+                    worked, dt = False, 0.
                 # make sure it was not used in other folders
                 elif not (img_name in list_img_name_used[class_wnid]):
                     tic = time.time()
@@ -94,10 +81,10 @@ for folder in args.folders :
                         if verbose : print('Good URl, now saving', img_url, ' in', class_folder, ' as', img_name)
                         imageio.imsave(os.path.join(class_folder, img_name), img_content, format='png')
                         list_img_name_used[class_wnid].append(img_name)
-                    df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':dt,
+                df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':dt,
                                 'worked':worked, 'class_wnid':class_wnid, 'class_name':class_name}
-
-                print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='' if verbose else '\n', flush=not verbose)
+                df_dataset.to_json(filename)
+                print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='\n' if verbose else '', flush=not verbose)
             #print('\n')
         if (len(clean_list(os.listdir(class_folder))) < N_images_per_class[folder]) and (len(list_urls[class_wnid]) == 0): 
             print('Not enough working url to complete the dataset') 
