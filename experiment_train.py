@@ -1,10 +1,10 @@
 from DCNN_transfer_learning.model import *
 
-def train_model(model, num_epochs, dataloaders, lr=args.lr, momentum=args.momentum, log_interval=100, **kwargs):
+def train_model(model, num_epochs, dataloaders, lr=args.lr, momentum=args.momentum, beta2=args.beta2, log_interval=100, **kwargs):
     
     model.to(device)
-    if momentum == 0.: # TODO : try Adam?
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)#, betas=(beta1, beta2), amsgrad=amsgrad)
+    if beta2 > 0.: 
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(momentum, beta2)) #, amsgrad=amsgrad)
     else:
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum) # to set training variables
 

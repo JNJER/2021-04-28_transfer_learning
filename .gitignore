@@ -1,4 +1,5 @@
-
+DCNN_transfer_learning/__pycache__/
+__pycache__/
 .DS_Store
 .ipynb_checkpoints/
 Imagenet_urls_ILSVRC_2016.json
