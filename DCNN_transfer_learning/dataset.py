@@ -15,6 +15,7 @@ def get_image(img_url, timeout=3., min_content=5000, verbose=verbose):
     try:
         img_resp = imageio.imread(img_url)
         if verbose : print(f"Success with url {img_url}")
+        # TODO : raise error when min_content is not reached
         return img_resp
     except Exception as e:
         if verbose : print(f"Failed with {e} for url {img_url}")
@@ -67,7 +68,7 @@ for folder in args.folders :
                 # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
                 img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
 
-                if img_url.split('.')[-1] in ['jpe', 'gif']:
+                if img_url.split('.')[-1] in ['.tiff', '.bmp', 'jpe', 'gif']:
                     if verbose: print('Bad extension for the img_url', img_url)
                     worked, dt = False, 0.
                 # make sure it was not used in other folders
