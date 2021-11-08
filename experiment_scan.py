@@ -9,7 +9,7 @@ scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
              'beta2': 1 - np.logspace(-5, -1, 7, base=10),
             }
 
-def main(N_avg=10):
+def main(N_avg=10, num_epochs=args.num_epochs//4):
 
     for key in scan_dicts:
         filename = f'results/{datetag}_train_scan_{key}_{args.HOST}.json'
@@ -40,7 +40,7 @@ def main(N_avg=10):
                 since = time.time()
 
                 (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(image_size=args.image_size, p=0, **new_kwarg)
-                models_vgg_, df_train = train_model(models_vgg_, num_epochs=args.num_epochs//4, dataloaders=dataloaders, **new_kwarg)
+                models_vgg_, df_train = train_model(models_vgg_, num_epochs=num_epochs, dataloaders=dataloaders, **new_kwarg)
 
                 elapsed_time = time.time() - since
                 print(f"Training completed in {elapsed_time // 60:.0f}m {elapsed_time % 60:.0f}s")

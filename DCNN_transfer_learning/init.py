@@ -14,10 +14,10 @@ import time
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-datetag = '2021-10-26'
+datetag = '2021-10-30'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
-HOST, device = 'inv-ope-de06', torch.device("cuda")
+HOST, device = 'neo-ope-de04', torch.device("cuda")
 
     
 # to store results
@@ -43,7 +43,7 @@ def arg_parse():
                     default = [64, 128, 256, 512], type = list)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = "Set the number of epoch to perform during the traitransportationning phase",
                     default = 200//DEBUG)
-    parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 32)
+    parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
     parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.0001)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
     parser.add_argument("--beta2", dest = 'beta2', help="Set the second momentum - use zero for SGD", default = 0.)
