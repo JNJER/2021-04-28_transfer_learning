@@ -68,21 +68,19 @@ for folder in args.folders :
                 # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
                 img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
 
+                tic = time.time()
                 if img_url.split('.')[-1] in ['.tiff', '.bmp', 'jpe', 'gif']:
                     if verbose: print('Bad extension for the img_url', img_url)
                     worked, dt = False, 0.
                 # make sure it was not used in other folders
                 elif not (img_name in list_img_name_used[class_wnid]):
-                    tic = time.time()
                     img_content = get_image(img_url, verbose=verbose)
-                    dt = time.time() - tic
-                    
                     worked = img_content is not False
                     if worked:
                         if verbose : print('Good URl, now saving', img_url, ' in', class_folder, ' as', img_name)
                         imageio.imsave(os.path.join(class_folder, img_name), img_content, format='png')
                         list_img_name_used[class_wnid].append(img_name)
-                df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':dt,
+                df_dataset.loc[len(df_dataset.index)] = {'img_url':img_url, 'img_name':img_name, 'is_flickr':1 if 'flickr' in img_url else 0, 'dt':time.time() - tic,
                                 'worked':worked, 'class_wnid':class_wnid, 'class_name':class_name}
                 df_dataset.to_json(filename)
                 print(f'\r{len(clean_list(os.listdir(class_folder)))} / {N_images_per_class[folder]}', end='\n' if verbose else '', flush=not verbose)

@@ -15,7 +15,7 @@ transforms_norm = transforms.Normalize(mean=mean, std=std) # to normalize colors
 import seaborn as sns
 import sklearn.metrics
 from scipy import stats
-from scipy.special import logit, expit
+from scipy.special import logit
 
 # VGG-16 datasets initialisation
 def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_size=args.batch_size, **kwargs):

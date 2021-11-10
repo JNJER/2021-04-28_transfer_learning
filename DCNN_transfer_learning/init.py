@@ -4,8 +4,10 @@ import torch
 import argparse
 import json
 import matplotlib.pyplot as plt
-plt.rc('xtick', labelsize=18)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=18)    # fontsize of the tick labels
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
+#plt.rc('xtick', labelsize=18)    # fontsize of the tick labels
+#plt.rc('ytick', labelsize=18)    # fontsize of the tick labels
 import numpy as np
 #from numpy import random
 import os
@@ -18,6 +20,7 @@ datetag = '2021-10-30'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
 HOST, device = 'neo-ope-de04', torch.device("cuda")
+#HOST, device = 'neo-ope-de04', torch.device("cpu")
 
     
 # to store results
