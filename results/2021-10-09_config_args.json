@@ -1,0 +1,47 @@
+{
+    "root": "data",
+    "folders": [
+        "test",
+        "val",
+        "train"
+    ],
+    "N_images": [
+        400,
+        200,
+        800
+    ],
+    "HOST": "inv-ope-de06",
+    "datetag": "2021-10-09",
+    "image_size": 256,
+    "image_sizes": [
+        64,
+        128,
+        256,
+        512
+    ],
+    "num_epochs": 50,
+    "batch_size": 16,
+    "lr": 0.001,
+    "momentum": 0.9,
+    "i_labels": [
+        945,
+        513,
+        886,
+        508,
+        786,
+        310,
+        373,
+        145,
+        146,
+        396
+    ],
+    "class_loader": "imagenet_label_to_wordnet_synset.json",
+    "url_loader": "Imagenet_urls_ILSVRC_2016.json",
+    "model_path": "models/re-trained_",
+    "model_names": [
+        "vgg16_gray",
+        "vgg16_lin",
+        "vgg16_gen",
+        "vgg16_scale"
+    ]
+}
