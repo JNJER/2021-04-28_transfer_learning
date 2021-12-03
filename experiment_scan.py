@@ -1,7 +1,6 @@
 
 #import model's script and set the output file
 from DCNN_transfer_learning.model import *
-from experiment_train import train_model
 
 scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
              'lr': args.lr * np.logspace(-1, 1, 7, base=10),
@@ -10,6 +9,7 @@ scan_dicts= {'batch_size' : [8, 13, 21, 34, 55],
             }
 
 def main(N_avg=10, num_epochs=args.num_epochs//4):
+    from experiment_train import train_model
 
     for key in scan_dicts:
         filename = f'results/{datetag}_train_scan_{key}_{args.HOST}.json'

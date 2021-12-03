@@ -6,23 +6,19 @@ import json
 import matplotlib.pyplot as plt
 plt.rcParams['xtick.labelsize'] = 18
 plt.rcParams['ytick.labelsize'] = 18
-#plt.rc('xtick', labelsize=18)    # fontsize of the tick labels
-#plt.rc('ytick', labelsize=18)    # fontsize of the tick labels
 import numpy as np
 #from numpy import random
 import os
 import requests
 import time
+from math import log 
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-datetag = '2021-10-30'
+datetag = '2021-12-01'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
-HOST, device = 'neo-ope-de04', torch.device("cuda")
-#HOST, device = 'neo-ope-de04', torch.device("cpu")
 
-    
 # to store results
 import pandas as pd
 
@@ -31,7 +27,7 @@ def arg_parse():
     DEBUG = 1
     parser = argparse.ArgumentParser(description='DCNN_transfer_learning/init.py set root')
     parser.add_argument("--root", dest = 'root', help = "Directory containing images to perform the training",
-                        default = 'data', type = str)
+                        default = '../data/transfer_learning', type = str)
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",
@@ -45,7 +41,7 @@ def arg_parse():
     parser.add_argument("--image_sizes", dest = 'image_sizes', help = "Set the image_sizes of the input for experiment 2 (downscaling)",
                     default = [64, 128, 256, 512], type = list)
     parser.add_argument("--num_epochs", dest = 'num_epochs', help = "Set the number of epoch to perform during the traitransportationning phase",
-                    default = 200//DEBUG)
+                    default = 25//DEBUG)
     parser.add_argument("--batch_size", dest = 'batch_size', help="Set the batch size", default = 16)
     parser.add_argument("--lr", dest = 'lr', help="Set the learning rate", default = 0.0001)
     parser.add_argument("--momentum", dest = 'momentum', help="Set the momentum", default = 0.9)
@@ -59,7 +55,7 @@ def arg_parse():
     parser.add_argument("--model_path", dest = 'model_path', help = "Set the path to the pre-trained model",
                         default = 'models/re-trained_', type = str)
     parser.add_argument("--model_names", dest = 'model_names', help = "Modes for the new trained networks",
-                        default = ['vgg16_lin', 'vgg16_gen', 'vgg16_scale', 'vgg16_gray', ], type = list)
+                        default = ['vgg16_lin', 'vgg16_gen', 'vgg16_scale', 'vgg16_gray', 'vgg16_full'], type = list)
     return parser.parse_args()
 
 args = arg_parse()
@@ -78,7 +74,7 @@ else:
         json.dump(vars(args), f, indent=4)
     
 # matplotlib parameters
-colors = ['b', 'r', 'k', 'g', 'm']
+colors = ['b', 'r', 'k', 'g', 'm','y']
 fig_width = 20
 phi = (np.sqrt(5)+1)/2 # golden ratio for the figures :-)
 

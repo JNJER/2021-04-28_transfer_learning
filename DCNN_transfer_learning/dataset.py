@@ -11,12 +11,15 @@ def clean_list(list_dir, patterns=['.DS_Store']):
     return list_dir
 
 import imageio
-def get_image(img_url, timeout=3., min_content=5000, verbose=verbose):
+def get_image(img_url, timeout=3., min_content=3, verbose=verbose):
     try:
         img_resp = imageio.imread(img_url)
-        if verbose : print(f"Success with url {img_url}")
-        # TODO : raise error when min_content is not reached
-        return img_resp
+        if (len(img_resp.shape) < min_content):
+            print(f"Url {img_url} does not have enough content")
+            return False
+        else:
+            if verbose : print(f"Success with url {img_url}")
+            return img_resp
     except Exception as e:
         if verbose : print(f"Failed with {e} for url {img_url}")
         return False # did not work
@@ -63,11 +66,9 @@ for folder in args.folders :
             img_url = list_urls[class_wnid].pop()
             
             if len(df_dataset[df_dataset['img_url']==img_url])==0 : # we have not yet tested this URL yet
-
                 # Transform URL into filename
                 # https://laurentperrinet.github.io/sciblog/posts/2018-06-13-generating-an-unique-seed-for-a-given-filename.html
                 img_name = hashlib.sha224(img_url.encode('utf-8')).hexdigest() + '.png'
-
                 tic = time.time()
                 if img_url.split('.')[-1] in ['.tiff', '.bmp', 'jpe', 'gif']:
                     if verbose: print('Bad extension for the img_url', img_url)
@@ -87,13 +88,4 @@ for folder in args.folders :
             #print('\n')
         if (len(clean_list(os.listdir(class_folder))) < N_images_per_class[folder]) and (len(list_urls[class_wnid]) == 0): 
             print('Not enough working url to complete the dataset') 
-    
     df_dataset.to_json(filename)
-
-
-if False: 
-    
-    # replace the file with that URLs that worked - removes the ones that failed
-    print(f'Replacing file {args.url_loader}')
-    with open(args.url_loader, 'wt') as f:
-        json.dump(Imagenet_urls_ILSVRC_2016, f, indent=4)

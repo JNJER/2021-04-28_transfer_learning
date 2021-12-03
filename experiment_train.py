@@ -73,11 +73,11 @@ for model_name in args.model_names:
     filename = f'results/{datetag}_{args.HOST}_train_{model_name}.json'
 
     models_vgg[model_name] = torchvision.models.vgg16(pretrained=True)
-    # TODO : compare with full learning
-    # Freeze training for all layers
-    # Newly created modules have require_grad=True by default
-    for param in models_vgg[model_name].features.parameters():
-        param.require_grad = False 
+    if model_name == 'vgg16_full':
+        pass
+    else:    
+        for param in models_vgg[model_name].features.parameters():
+            param.require_grad = False 
 
     if model_name == 'vgg16_lin':
         num_features = models_vgg[model_name].classifier[-1].out_features
