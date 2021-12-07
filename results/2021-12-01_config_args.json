@@ -1,0 +1,49 @@
+{
+    "root": "../data/transfer_learning",
+    "folders": [
+        "test",
+        "val",
+        "train"
+    ],
+    "N_images": [
+        400,
+        200,
+        800
+    ],
+    "HOST": "neo-ope-de04",
+    "datetag": "2021-12-01",
+    "image_size": 256,
+    "image_sizes": [
+        64,
+        128,
+        256,
+        512
+    ],
+    "num_epochs": 25,
+    "batch_size": 16,
+    "lr": 0.0001,
+    "momentum": 0.9,
+    "beta2": 0.0,
+    "subset_i_labels": [
+        945,
+        513,
+        886,
+        508,
+        786,
+        310,
+        373,
+        145,
+        146,
+        396
+    ],
+    "class_loader": "imagenet_label_to_wordnet_synset.json",
+    "url_loader": "Imagenet_urls_ILSVRC_2016.json",
+    "model_path": "models/re-trained_",
+    "model_names": [
+        "vgg16_lin",
+        "vgg16_gen",
+        "vgg16_scale",
+        "vgg16_gray",
+        "vgg16_full"
+    ]
+}

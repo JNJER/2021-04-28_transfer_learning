@@ -18,7 +18,7 @@ from scipy import stats
 from scipy.special import logit
 
 # VGG-16 datasets initialisation
-def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_size=args.batch_size, **kwargs):
+def datasets_transforms(image_size=args.image_size, c=1, p=0, num_workers=1, batch_size=args.batch_size, **kwargs):
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize((int(image_size), int(image_size))),
@@ -37,11 +37,10 @@ def datasets_transforms(image_size=args.image_size, p=0, num_workers=1, batch_si
         'test': transforms.Compose([
             transforms.Resize((int(image_size), int(image_size))),
             transforms.RandomGrayscale(p=p),
+            transforms.ColorJitter(contrast=c), # https://pytorch.org/vision/0.8/_modules/torchvision/transforms/transforms.html#ColorJitter
             transforms.ToTensor(),      # Convert the image to pyTorch Tensor data type.
             transforms_norm ]),
     }
-    #print(paths)
-    
 
     image_datasets = {
         folder: datasets.ImageFolder(
