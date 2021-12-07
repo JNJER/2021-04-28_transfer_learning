@@ -7,3 +7,4 @@ data/
 models/
 results/
 .ipynb_checkpoints/benchmark_transfer_learning_VGG-checkpoint.ipynb
+transfer_learning_data
