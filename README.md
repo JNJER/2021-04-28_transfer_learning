@@ -1,5 +1,5 @@
-# 2020-01-11_fast_and_curious
-Projet de stage master 2 : modélisation du traitement visuel d'une image fovéale
+# 2020-01-11_fast_and_curious  [![DOI](https://zenodo.org/badge/362495685.svg)](https://zenodo.org/badge/latestdoi/362495685)
+Projet de stage master 2 : modélisation du traitement visuel d'une image fovéale 
 
 
 ## getting the submodule to download images
