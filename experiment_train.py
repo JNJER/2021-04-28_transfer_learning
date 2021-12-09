@@ -62,7 +62,6 @@ criterion = nn.CrossEntropyLoss()
 
 models_vgg = {}
 opt = {}
-#df_train = {}
 
 models_vgg['vgg'] = torchvision.models.vgg16(pretrained=True)
 
@@ -93,8 +92,6 @@ for model_name in args.model_names:
 
     if os.path.isfile(model_filenames[model_name]):
         print("Loading pretrained model for..", model_name, ' from', model_filenames[model_name])
-        #print("Resume_training : ", resume_training)
-
         if device.type == 'cuda':
             models_vgg[model_name].load_state_dict(torch.load(model_filenames[model_name])) #on GPU
         else:

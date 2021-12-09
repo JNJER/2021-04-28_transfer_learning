@@ -3,11 +3,11 @@
 import torch
 import argparse
 import json
+import matplotlib
 import matplotlib.pyplot as plt
 plt.rcParams['xtick.labelsize'] = 18
 plt.rcParams['ytick.labelsize'] = 18
 import numpy as np
-#from numpy import random
 import os
 import requests
 import time
@@ -15,7 +15,6 @@ from math import log
 
 from time import strftime, gmtime
 datetag = strftime("%Y-%m-%d", gmtime())
-datetag = '2021-12-01'
 
 HOST, device = os.uname()[1], torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -27,7 +26,7 @@ def arg_parse():
     DEBUG = 1
     parser = argparse.ArgumentParser(description='DCNN_transfer_learning/init.py set root')
     parser.add_argument("--root", dest = 'root', help = "Directory containing images to perform the training",
-                        default = '../data/transfer_learning', type = str)
+                        default = 'data', type = str)
     parser.add_argument("--folders", dest = 'folders', help =  "Set the training, validation and testing folders relative to the root",
                         default = ['test', 'val', 'train'], type = list)
     parser.add_argument("--N_images", dest = 'N_images', help ="Set the number of images per classe in the train folder",

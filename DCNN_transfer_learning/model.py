@@ -53,7 +53,7 @@ def datasets_transforms(image_size=args.image_size, c=1, p=0, num_workers=1, bat
     dataloaders = {
         folder: torch.utils.data.DataLoader(
             image_datasets[folder], batch_size=batch_size,
-            shuffle=True, num_workers=num_workers
+            shuffle=False if folder == "test" else True, num_workers=num_workers
         )
         for folder in args.folders
     }

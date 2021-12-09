@@ -1,7 +1,7 @@
 #import model's script and set the output file
-#analyse *post-hoc* effect of contrast or salience 
-from DCNN_transfer_learning.model import *
+from experiment_train import *
 filename = f'results/{datetag}_results_4_{args.HOST}.json'
+print(f'{filename=}')
 
 def main():
     if os.path.isfile(filename):
@@ -10,7 +10,7 @@ def main():
         i_trial = 0
         df_contrast = pd.DataFrame([], columns=['model', 'likelihood', 'fps', 'time', 'label', 'i_label', 'i_image', 'contrast', 'filename', 'device_type', 'top_1']) 
         # image preprocessing
-        for contrast in np.arange(0,110,10):
+        for contrast in np.arange(1,110,10):
             (dataset_sizes, dataloaders, image_datasets, data_transforms) = datasets_transforms(c=contrast, batch_size=1)
             print(f'Contrast de {contrast=}')
             # Displays the input image of the model 
@@ -35,12 +35,12 @@ def main():
                             percentage = torch.nn.functional.softmax(out, dim=0) * 100
                             likelihood = percentage[label].item()
                         dt = time.time() - tic
-                    #print(f'The {model_name} model get {labels[i_label_top]} at {likelihood:.2f} % confidence in {dt:.3f} seconds, best confidence for : {top_1}')
+                    print(f'The {model_name} model get {labels[i_label_top]} at {likelihood:.2f} % confidence in {dt:.3f} seconds, best confidence for : {top_1}')
                     df_contrast.loc[i_trial] = {'model':model_name, 'likelihood':likelihood, 'time':dt, 'fps': 1/dt,
                                        'label':labels[i_label_top], 'i_label':i_label_top, 
                                        'i_image':i_image, 'filename':image_datasets['test'].imgs[i_image][0], 'contrast': contrast, 'device_type':device.type, 'top_1':str(top_1)}
                     i_trial += 1
 
-            df_contrast.to_json(filename)
+    df_contrast.to_json(filename)
 
 main()            
